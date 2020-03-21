@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  description: APIs for Sesamo project
+  version: 0.0.1
+  title: Sesamo
+  contact:
+    email: matteopietro.dazzi@gft.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+tags:
+  - name: open
+    description: Open/close the object
+  - name: test
+    description: Test the object configuration
+paths:
+  /open/{object}:
+    post:
+      tags:
+        - open
+      summary: Open the object
+      description: Open the object
+      parameters:
+        - in: path
+          required: true
+          name: object
+          description: Object to open
+          schema:
+            type: string
+            enum:
+              - gate
+              - wicket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenRequest"
+        description: Request body
+        required: true
+      responses:
+        "200":
+          description: Open OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        "401":
+          description: Not authorized to open the object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        "500":
+          description: Open KO
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /test/{object}:
+    post:
+      tags:
+        - test
+      summary: Test the object
+      description: Test the object
+      parameters:
+        - in: path
+          required: true
+          name: object
+          description: Object to test
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenRequest"
+        description: Request body
+        required: true
+      responses:
+        "200":
+          description: Test OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        "401":
+          description: Not authorized to test the object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        "500":
+          description: Test KO
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+servers:
+  - url: https://sesamo-iot.firebaseio.com
+components:
+  schemas:
+    OpenRequest:
+      type: object
+      properties:
+        deviceId:
+          type: string
+          description: ID of the device that want to open the object
+        serverId:
+          type: string
+          description: ID of the server that will handle the request
+    MessageResponse:
+      type: object
+      properties:
+        messageId:
+          type: string
+          description: ID of the error message to show
+          required: true
