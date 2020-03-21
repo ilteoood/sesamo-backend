@@ -9,7 +9,7 @@ export class IftttHandler implements ActionBase {
     @Inject()
     private http: HttpService;
 
-    async open(configuration: any): Promise<boolean> {
+    async open(configuration: Map<string, string>): Promise<boolean> {
         const urlToCall = this.buildUrl(configuration);
         this.logger.debug(`I'll call this IFTTT URL: ${urlToCall}`);
         const response = await this.http.post(urlToCall).toPromise();

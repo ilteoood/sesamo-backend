@@ -9,9 +9,27 @@ export class FirestoreReader {
 
     public async findServer(serverId: string): Promise<undefined | FirebaseServer> {
         const serverPath = `servers/${serverId}`;
-        const serverDocument = this.fireStoreClient.doc(serverPath);
-        const documentContent = await serverDocument.get();
+        const documentContent = await this.getDocumentContent(serverPath);
         return documentContent.exists ? FirebaseServer.convertDocument(documentContent) : undefined;
+    }
+
+    public async findConfigurations(serverId: string, object: string): Promise<undefined | Map<string, string>> {
+        const configurationPath = `servers/${serverId}/configurations/${object}`;
+        const configurationContent = await this.getDocumentContent(configurationPath);
+        return configurationContent.exists ? this.documentConverter(configurationContent) : undefined;
+    }
+
+    private async getDocumentContent(documentPath: string): Promise<FirebaseFirestore.DocumentSnapshot> {
+        const document = this.fireStoreClient.doc(documentPath);
+        return await document.get();
+    }
+
+    private documentConverter(document: FirebaseFirestore.DocumentSnapshot): Map<string, string> {
+        const mappedDocument = new Map();
+        const documentData = document.data();
+        const documentKeys = documentData ? Object.keys(documentData) : [];
+        documentKeys.forEach(key => mappedDocument.set(key, documentData[key]));
+        return mappedDocument;
     }
 
 }

@@ -17,8 +17,9 @@ export class CanOpen implements CanActivate {
         this.checkOpenRequest(requestBody);
         const firebaseServer = await this.firestoreReader.findServer(requestBody.serverId);
         this.checkFirebaseServer(firebaseServer);
-        this.checkObject(firebaseServer, request.params.object);
         this.checkPermissions(firebaseServer, requestBody);
+        const objectConfigurations = await this.firestoreReader.findConfigurations(requestBody.serverId, request.params.object);
+        this.checkConfiguration(objectConfigurations);
         return true;
     }
 
@@ -34,15 +35,15 @@ export class CanOpen implements CanActivate {
         }
     }
 
-    private checkObject(firebaseServer: FirebaseServer, object: string) {
-        if (!firebaseServer.configurations[object]) {
-            throw new BusinessError("invalid_action");
-        }
-    }
-
     private checkPermissions(firebaseServer: FirebaseServer, requestBody: OpenRequest) {
         if (!firebaseServer.allowedDevices.includes(requestBody.deviceId)) {
             throw new AuthorizationError("unauthorized_device");
+        }
+    }
+
+    private checkConfiguration(configuration: Map<string, string>) {
+        if (!configuration || configuration.size == 0) {
+            throw new BusinessError("invalid_action");
         }
     }
 }
