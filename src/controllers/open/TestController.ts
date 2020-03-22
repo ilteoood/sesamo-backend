@@ -1,6 +1,6 @@
 import {Body, Controller, Param, Post, UseGuards} from "@nestjs/common";
 import {MessageResponse} from "../../models/api/messageResponse";
-import {CanOpen} from "../../providers/CanOpen";
+import {CanOpen} from "../../guards/CanOpen";
 import {OpenRequest} from "../../models/api/openRequest";
 
 @Controller('test')

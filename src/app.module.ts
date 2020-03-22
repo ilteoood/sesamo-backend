@@ -2,7 +2,7 @@ import {HttpModule, Module} from '@nestjs/common';
 import {OpenController} from "./controllers/open/OpenController";
 import {FirestoreReader} from "./providers/FirestoreReader";
 import {ActionHandlerFacade} from "./providers/ActionHandlerFacade";
-import {CanOpen} from "./providers/CanOpen";
+import {CanOpen} from "./guards/CanOpen";
 import {IftttHandler} from "./actionsHandlers/handlers/IftttHandler";
 import {TestController} from "./controllers/open/TestController";
 

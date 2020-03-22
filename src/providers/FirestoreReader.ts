@@ -19,6 +19,12 @@ export class FirestoreReader {
         return configurationContent.exists ? this.documentConverter(configurationContent) : undefined;
     }
 
+    public async findAllowedDevices(serverId: string): Promise<string[]> {
+        const configurationPath = `servers/${serverId}/configurations/allowedDevices`;
+        const configurationContent = await this.getDocumentContent(configurationPath);
+        return configurationContent.exists ? configurationContent.data().list : [];
+    }
+
     private async getDocumentContent(documentPath: string): Promise<FirebaseFirestore.DocumentSnapshot> {
         const document = this.fireStoreClient.doc(documentPath);
         return await document.get();
