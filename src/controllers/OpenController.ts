@@ -1,9 +1,9 @@
 import {Body, Controller, Param, Post, UseGuards} from "@nestjs/common";
-import {FirestoreReader} from "../../providers/FirestoreReader";
-import {OpenRequest} from "../../models/api/openRequest";
-import {ActionHandlerFacade} from "../../providers/ActionHandlerFacade";
-import {CanOpen} from "../../guards/CanOpen";
-import {MessageResponse} from "../../models/api/messageResponse";
+import {FirestoreReader} from "../providers/FirestoreReader";
+import {OpenRequest} from "../models/api/openRequest";
+import {ActionHandlerFacade} from "../providers/ActionHandlerFacade";
+import {CanOpen} from "../guards/CanOpen";
+import {MessageResponse} from "../models/api/messageResponse";
 
 @Controller('open')
 export class OpenController {

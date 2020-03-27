@@ -1,11 +1,11 @@
 import {HttpModule, Module} from '@nestjs/common';
-import {OpenController} from "./controllers/open/OpenController";
+import {OpenController} from "./controllers/OpenController";
 import {FirestoreReader} from "./providers/FirestoreReader";
 import {ActionHandlerFacade} from "./providers/ActionHandlerFacade";
 import {CanOpen} from "./guards/CanOpen";
 import {IftttHandler} from "./actionsHandlers/handlers/IftttHandler";
-import {TestController} from "./controllers/open/TestController";
-import {WarmUpController} from "./controllers/open/WarmUpController";
+import {TestController} from "./controllers/TestController";
+import {WarmUpController} from "./controllers/WarmUpController";
 
 @Module({
     imports: [HttpModule],
