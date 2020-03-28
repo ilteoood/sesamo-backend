@@ -13,8 +13,11 @@ export class FirestoreReader {
     constructor() {
         this.fireStoreClient
             .collection('servers')
-            .onSnapshot(async serversSnapshot => serversSnapshot.docs
-                .forEach(await this.createServerEntry.bind(this)));
+            .onSnapshot(async serversSnapshot => {
+                this.servers.clear();
+                serversSnapshot.docs
+                    .forEach(await this.createServerEntry.bind(this))
+            });
     }
 
     private async createServerEntry(documentSnapshot: QueryDocumentSnapshot) {
