@@ -34,7 +34,7 @@ export class CanOpen implements CanActivate {
 
     private checkConfiguration(requestBody: OpenRequest, requestParams: any) {
         const objectConfigurations = this.firestoreReader.findConfigurations(requestBody.serverId, requestParams.object);
-        if (!objectConfigurations) {
+        if (!objectConfigurations || objectConfigurations.size == 0) {
             throw new BusinessError("invalid_action");
         }
     }

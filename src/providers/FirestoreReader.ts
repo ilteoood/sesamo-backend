@@ -1,7 +1,6 @@
 import {Injectable} from "@nestjs/common";
 import {Firestore} from "@google-cloud/firestore";
 import {FirebaseServer} from "../models/firebase/FirebaseServer";
-import {ServerAction} from "../models/firebase/ServerAction";
 import QueryDocumentSnapshot = FirebaseFirestore.QueryDocumentSnapshot;
 
 @Injectable()
@@ -26,7 +25,7 @@ export class FirestoreReader {
         return this.servers[serverId];
     }
 
-    public findConfigurations(serverId: string, object: string): undefined | ServerAction {
+    public findConfigurations(serverId: string, object: string): undefined | Map<string, string> {
         const server = this.findServer(serverId);
         return server.actions[object];
     }

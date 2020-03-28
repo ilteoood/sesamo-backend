@@ -1,6 +1,5 @@
 import DocumentData = FirebaseFirestore.DocumentData;
 import QueryDocumentSnapshot = FirebaseFirestore.QueryDocumentSnapshot;
-import {ServerAction} from "./ServerAction";
 
 export class FirebaseServer {
     static readonly FIELDS = ["name", "type"];
@@ -8,12 +7,12 @@ export class FirebaseServer {
     name: string;
     type: string;
     allowedDevices: string[] = [];
-    actions: Map<String, ServerAction> = new Map();
+    actions: Map<string, Map<string, string>> = new Map();
 
     static async convertServerDocument(documentData: DocumentData): Promise<FirebaseServer> {
         const documentContent = documentData.data();
-        const firebaseServer = new FirebaseServer();
         const configurationDocument = await documentData.ref.collection("configurations").get();
+        const firebaseServer = new FirebaseServer();
         this.FIELDS.forEach(field => firebaseServer[field] = documentContent[field]);
         firebaseServer.allowedDevices = this.findAllowedDevices(configurationDocument.docs);
         firebaseServer.actions = this.createActionsMap(configurationDocument.docs);
@@ -32,7 +31,7 @@ export class FirebaseServer {
         const actions = new Map();
         documents
             .filter(document => !this.isAllowedDevices(document))
-            .forEach(document => actions[document.id] = ServerAction.createFromDocument(document));
+            .forEach(document => actions[document.id] = document.data());
         return actions;
     }
 }
