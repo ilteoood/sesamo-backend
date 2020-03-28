@@ -15,7 +15,7 @@ export class OpenController {
 
     @Post(':object')
     @UseGuards(CanOpen)
-    async openObject(@Param('object') object, @Body() requestBody: OpenRequest): Promise<MessageResponse> {
+    async openObject(@Param('object') object: string, @Body() requestBody: OpenRequest): Promise<MessageResponse> {
         const firebaseServer = this.firestoreReader.findServer(requestBody.serverId);
         await this.actionHandlerFacade.open(firebaseServer, object);
         return OpenController.OK_MESSAGE;

@@ -16,9 +16,9 @@ export class ActionHandlerFacade {
         this.serverTypes = {ifttt};
     }
 
-    async open(firebaseServer: FirebaseServer, configurations: Map<string, string>): Promise<boolean> {
+    async open(firebaseServer: FirebaseServer, object: string): Promise<boolean> {
         const requestHandler = this.serverTypes[firebaseServer.type];
-        return await requestHandler.open(configurations);
+        return await requestHandler.open(firebaseServer.actions[object]);
     }
 
 }
