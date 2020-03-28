@@ -1,43 +1,45 @@
 import {Injectable} from "@nestjs/common";
 import {Firestore} from "@google-cloud/firestore";
 import {FirebaseServer} from "../models/firebase/FirebaseServer";
-import DocumentSnapshot = FirebaseFirestore.DocumentSnapshot;
+import {ServerAction} from "../models/firebase/ServerAction";
+import QueryDocumentSnapshot = FirebaseFirestore.QueryDocumentSnapshot;
 
 @Injectable()
 export class FirestoreReader {
 
     private fireStoreClient = new Firestore();
-    private serversSnapshot: DocumentSnapshot;
+    private servers: Map<String, FirebaseServer> = new Map();
+
 
     constructor() {
         this.fireStoreClient
-            .doc('servers')
-            .onSnapshot(documentSnapshot => this.serversSnapshot = documentSnapshot);
+            .collection('servers')
+            .onSnapshot(async serversSnapshot => serversSnapshot.docs
+                .forEach(await this.createServerEntry.bind(this)));
+    }
+
+    private async createServerEntry(documentSnapshot: QueryDocumentSnapshot) {
+        this.servers[documentSnapshot.id] = await this.createServer(documentSnapshot);
+    }
+
+    private async createServer(documentSnapshot: QueryDocumentSnapshot): Promise<FirebaseServer> {
+        const firebaseServer = FirebaseServer.convertServerDocument(documentSnapshot);
+        const configurationDocument = await documentSnapshot.ref.collection("configurations").get();
+        firebaseServer.convertConfigurationsDocument(configurationDocument.docs);
+        return firebaseServer;
     }
 
     public findServer(serverId: string): undefined | FirebaseServer {
-        const documentContent = this.serversSnapshot.get(serverId);
-        return documentContent.exists ? FirebaseServer.convertDocument(documentContent) : undefined;
+        return this.servers[serverId];
     }
 
-    public findConfigurations(serverId: string, object: string): undefined | Map<string, string> {
-        const configurationPath = `${serverId}/configurations/${object}`;
-        const configurationContent = this.serversSnapshot.get(configurationPath);
-        return configurationContent.exists ? this.documentConverter(configurationContent) : undefined;
+    public findConfigurations(serverId: string, object: string): undefined | ServerAction {
+        const server = this.findServer(serverId);
+        return server.actions[object];
     }
 
     public findAllowedDevices(serverId: string): string[] {
-        const configurationPath = `servers/${serverId}/configurations/allowedDevices`;
-        const configurationContent = this.serversSnapshot.get(configurationPath);
-        return configurationContent.exists ? configurationContent.data().list : [];
-    }
-
-    private documentConverter(document: FirebaseFirestore.DocumentSnapshot): Map<string, string> {
-        const mappedDocument = new Map();
-        const documentData = document.data();
-        const documentKeys = documentData ? Object.keys(documentData) : [];
-        documentKeys.forEach(key => mappedDocument.set(key, documentData[key]));
-        return mappedDocument;
+        return this.findServer(serverId).allowedDevices;
     }
 
 }
