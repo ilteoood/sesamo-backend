@@ -9,13 +9,13 @@ export class CanOpen implements CanActivate {
     constructor(private firestoreReader: FirestoreReader) {
     }
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
+    canActivate(context: ExecutionContext): boolean {
         const request = context.switchToHttp().getRequest();
         const requestBody = request.body;
         this.checkOpenRequest(requestBody);
-        await this.checkFirebaseServer(requestBody);
-        await this.checkConfiguration(requestBody, request.params);
-        await this.checkPermissions(requestBody);
+        this.checkFirebaseServer(requestBody);
+        this.checkConfiguration(requestBody, request.params);
+        this.checkPermissions(requestBody);
         return true;
     }
 
@@ -25,22 +25,22 @@ export class CanOpen implements CanActivate {
         }
     }
 
-    private async checkFirebaseServer(requestBody: OpenRequest) {
-        const firebaseServer = await this.firestoreReader.findServer(requestBody.serverId);
+    private checkFirebaseServer(requestBody: OpenRequest) {
+        const firebaseServer = this.firestoreReader.findServer(requestBody.serverId);
         if (!firebaseServer) {
             throw new BusinessError("invalid_server");
         }
     }
 
-    private async checkConfiguration(requestBody: OpenRequest, requestParams: any) {
-        const objectConfigurations = await this.firestoreReader.findConfigurations(requestBody.serverId, requestParams.object);
+    private checkConfiguration(requestBody: OpenRequest, requestParams: any) {
+        const objectConfigurations = this.firestoreReader.findConfigurations(requestBody.serverId, requestParams.object);
         if (!objectConfigurations || objectConfigurations.size == 0) {
             throw new BusinessError("invalid_action");
         }
     }
 
-    private async checkPermissions(requestBody: OpenRequest) {
-        const allowedDevices = await this.firestoreReader.findAllowedDevices(requestBody.serverId);
+    private checkPermissions(requestBody: OpenRequest) {
+        const allowedDevices = this.firestoreReader.findAllowedDevices(requestBody.serverId);
         if (!allowedDevices.includes(requestBody.deviceId)) {
             throw new AuthorizationError("unauthorized_device");
         }

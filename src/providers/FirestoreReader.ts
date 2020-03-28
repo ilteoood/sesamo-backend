@@ -1,33 +1,35 @@
 import {Injectable} from "@nestjs/common";
 import {Firestore} from "@google-cloud/firestore";
 import {FirebaseServer} from "../models/firebase/FirebaseServer";
+import DocumentSnapshot = FirebaseFirestore.DocumentSnapshot;
 
 @Injectable()
 export class FirestoreReader {
 
     private fireStoreClient = new Firestore();
+    private serversSnapshot: DocumentSnapshot;
 
-    public async findServer(serverId: string): Promise<undefined | FirebaseServer> {
-        const serverPath = `servers/${serverId}`;
-        const documentContent = await this.getDocumentContent(serverPath);
+    constructor() {
+        this.fireStoreClient
+            .doc('servers')
+            .onSnapshot(documentSnapshot => this.serversSnapshot = documentSnapshot);
+    }
+
+    public findServer(serverId: string): undefined | FirebaseServer {
+        const documentContent = this.serversSnapshot.get(serverId);
         return documentContent.exists ? FirebaseServer.convertDocument(documentContent) : undefined;
     }
 
-    public async findConfigurations(serverId: string, object: string): Promise<undefined | Map<string, string>> {
-        const configurationPath = `servers/${serverId}/configurations/${object}`;
-        const configurationContent = await this.getDocumentContent(configurationPath);
+    public findConfigurations(serverId: string, object: string): undefined | Map<string, string> {
+        const configurationPath = `${serverId}/configurations/${object}`;
+        const configurationContent = this.serversSnapshot.get(configurationPath);
         return configurationContent.exists ? this.documentConverter(configurationContent) : undefined;
     }
 
-    public async findAllowedDevices(serverId: string): Promise<string[]> {
+    public findAllowedDevices(serverId: string): string[] {
         const configurationPath = `servers/${serverId}/configurations/allowedDevices`;
-        const configurationContent = await this.getDocumentContent(configurationPath);
+        const configurationContent = this.serversSnapshot.get(configurationPath);
         return configurationContent.exists ? configurationContent.data().list : [];
-    }
-
-    private async getDocumentContent(documentPath: string): Promise<FirebaseFirestore.DocumentSnapshot> {
-        const document = this.fireStoreClient.doc(documentPath);
-        return await document.get();
     }
 
     private documentConverter(document: FirebaseFirestore.DocumentSnapshot): Map<string, string> {
