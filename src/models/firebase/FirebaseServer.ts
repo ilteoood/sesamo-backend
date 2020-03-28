@@ -19,15 +19,15 @@ export class FirebaseServer {
         return firebaseServer;
     }
 
-    static findAllowedDevices(documents: QueryDocumentSnapshot[]) {
+    static findAllowedDevices(documents: QueryDocumentSnapshot[]): string[] {
         return documents.find(this.isAllowedDevices).get('list');
     }
 
-    static isAllowedDevices(document: QueryDocumentSnapshot) {
+    static isAllowedDevices(document: QueryDocumentSnapshot): boolean {
         return document.id === "allowedDevices";
     }
 
-    static createActionsMap(documents: QueryDocumentSnapshot[]) {
+    static createActionsMap(documents: QueryDocumentSnapshot[]): Map<string, Map<string, string>> {
         const actions = new Map();
         documents
             .filter(document => !this.isAllowedDevices(document))
