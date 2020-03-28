@@ -19,14 +19,7 @@ export class FirestoreReader {
     }
 
     private async createServerEntry(documentSnapshot: QueryDocumentSnapshot) {
-        this.servers[documentSnapshot.id] = await this.createServer(documentSnapshot);
-    }
-
-    private async createServer(documentSnapshot: QueryDocumentSnapshot): Promise<FirebaseServer> {
-        const firebaseServer = FirebaseServer.convertServerDocument(documentSnapshot);
-        const configurationDocument = await documentSnapshot.ref.collection("configurations").get();
-        firebaseServer.convertConfigurationsDocument(configurationDocument.docs);
-        return firebaseServer;
+        this.servers[documentSnapshot.id] = await FirebaseServer.convertServerDocument(documentSnapshot);
     }
 
     public findServer(serverId: string): undefined | FirebaseServer {

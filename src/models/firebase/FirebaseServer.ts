@@ -10,16 +10,29 @@ export class FirebaseServer {
     allowedDevices: string[] = [];
     actions: Map<String, ServerAction> = new Map();
 
-    static convertServerDocument(documentData: DocumentData): FirebaseServer {
+    static async convertServerDocument(documentData: DocumentData): Promise<FirebaseServer> {
         const documentContent = documentData.data();
         const firebaseServer = new FirebaseServer();
+        const configurationDocument = await documentData.ref.collection("configurations").get();
         this.FIELDS.forEach(field => firebaseServer[field] = documentContent[field]);
+        firebaseServer.allowedDevices = this.findAllowedDevices(configurationDocument.docs);
+        firebaseServer.actions = this.createActionsMap(configurationDocument.docs);
         return firebaseServer;
     }
 
-    convertConfigurationsDocument(documents: QueryDocumentSnapshot[]) {
-        this.allowedDevices = documents.find(document => document.id === "allowedDevices").get('list');
-        documents.filter(document => document.id !== "allowedDevices")
-            .forEach(document => this.actions[document.id] = ServerAction.createFromDocument(document));
+    static findAllowedDevices(documents: QueryDocumentSnapshot[]) {
+        return documents.find(this.isAllowedDevices).get('list');
+    }
+
+    static isAllowedDevices(document: QueryDocumentSnapshot) {
+        return document.id === "allowedDevices";
+    }
+
+    static createActionsMap(documents: QueryDocumentSnapshot[]) {
+        const actions = new Map();
+        documents
+            .filter(document => !this.isAllowedDevices(document))
+            .forEach(document => actions[document.id] = ServerAction.createFromDocument(document));
+        return actions;
     }
 }
