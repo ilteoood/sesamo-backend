@@ -106,3 +106,4 @@ dist
 .idea
 .idea/
 firebase_reader.json
+.DS_Store
