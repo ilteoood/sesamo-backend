@@ -1,0 +1,26 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: ts-loader
+    versions:
+    - 9.0.2
+    - 9.1.0
+  - dependency-name: rxjs
+    versions:
+    - 6.6.7
+  - dependency-name: "@types/node"
+    versions:
+    - 14.14.33
+  - dependency-name: "@nestjs/common"
+    versions:
+    - 7.6.12
+    - 7.6.9
+  - dependency-name: "@nestjs/testing"
+    versions:
+    - 7.6.11
