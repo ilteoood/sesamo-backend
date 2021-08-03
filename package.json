@@ -23,7 +23,7 @@
     "gcp-build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^4.14.0",
+    "@google-cloud/firestore": "^4.14.1",
     "@nestjs/common": "^7.6.18",
     "@nestjs/core": "^7.6.18",
     "@nestjs/platform-express": "^7.6.18",
