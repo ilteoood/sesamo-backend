@@ -1,4 +1,4 @@
-runtime: nodejs12
+runtime: nodejs18
 
 handlers:
   - url: /.*
