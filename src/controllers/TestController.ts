@@ -1,17 +1,17 @@
-import {Body, Controller, Param, Post, UseGuards} from "@nestjs/common";
-import {MessageResponse} from "../models/api/messageResponse";
-import {CanOpen} from "../guards/CanOpen";
-import {OpenRequest} from "../models/api/openRequest";
+import {Controller, Post, UseGuards} from '@nestjs/common'
+
+import {CanOpen} from '../guards/CanOpen'
+import {MessageResponse} from '../models/api/messageResponse'
 
 @Controller('test')
 export class TestController {
 
-    private static readonly OK_MESSAGE: MessageResponse = new MessageResponse("test_ok");
+    private static readonly OK_MESSAGE: MessageResponse = new MessageResponse('test_ok')
 
     @Post(':object')
     @UseGuards(CanOpen)
-    openObject(@Param('object') object, @Body() requestBody: OpenRequest): MessageResponse {
-        return TestController.OK_MESSAGE;
+    openObject(): MessageResponse {
+        return TestController.OK_MESSAGE
     }
 
 }
