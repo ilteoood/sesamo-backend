@@ -1,3 +1,3 @@
 export interface ActionBase {
-    open(configuration: Map<string, string>): Promise<boolean>;
+    open(configuration: Record<string, string>): Promise<boolean>;
 }
