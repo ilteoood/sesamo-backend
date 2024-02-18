@@ -1,13 +1,14 @@
 import {HttpModule} from '@nestjs/axios'
 import {Module} from '@nestjs/common'
-import {HttpPostHandler} from 'src/actionsHandlers/handlers/HttpPostHandler'
-import {IftttHandler} from 'src/actionsHandlers/handlers/IftttHandler'
-import {OpenController} from 'src/controllers/OpenController'
-import {TestController} from 'src/controllers/TestController'
-import {WarmUpController} from 'src/controllers/WarmUpController'
-import {CanOpen} from 'src/guards/CanOpen'
-import {ActionHandlerFacade} from 'src/providers/ActionHandlerFacade'
-import {FirestoreReader} from 'src/providers/FirestoreReader'
+
+import {HttpPostHandler} from './actionsHandlers/handlers/HttpPostHandler'
+import {IftttHandler} from './actionsHandlers/handlers/IftttHandler'
+import {OpenController} from './controllers/OpenController'
+import {TestController} from './controllers/TestController'
+import {WarmUpController} from './controllers/WarmUpController'
+import {CanOpen} from './guards/CanOpen'
+import {ActionHandlerFacade} from './providers/ActionHandlerFacade'
+import {FirestoreReader} from './providers/FirestoreReader'
 
 @Module({
     imports: [HttpModule],

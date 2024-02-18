@@ -1,8 +1,9 @@
 import {Injectable} from '@nestjs/common'
-import {ActionBase} from 'src/actionsHandlers/ActionBase'
-import {HttpPostHandler} from 'src/actionsHandlers/handlers/HttpPostHandler'
-import {IftttHandler} from 'src/actionsHandlers/handlers/IftttHandler'
-import {FirebaseServer} from 'src/models/firebase/FirebaseServer'
+
+import {ActionBase} from '../actionsHandlers/ActionBase'
+import {HttpPostHandler} from '../actionsHandlers/handlers/HttpPostHandler'
+import {IftttHandler} from '../actionsHandlers/handlers/IftttHandler'
+import {FirebaseServer} from '../models/firebase/FirebaseServer'
 
 type ServerTypes = 'ifttt' | 'httpPost'
 
