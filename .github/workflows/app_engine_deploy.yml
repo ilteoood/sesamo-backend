@@ -22,14 +22,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Initialize Google Cloud SDK
-        uses: zxyle/publish-gae-action@master
+      - uses: 'google-github-actions/auth@v2'
         with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.PROJECT_ID }}
-      - name: Publish app to Google App Engine
-        run: |
-          gcloud auth activate-service-account ${{ secrets.GCP_SA_EMAIL }} --key-file=client-secret.json
-          gcloud config set project ${{ secrets.PROJECT_ID }}
-          gcloud -q app deploy app.yaml --promote --stop-previous-version -v v1
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: 'google-github-actions/deploy-appengine@v2'
+        with:
+          project_id: ${{ secrets.PROJECT_ID }}
+          flags: --no-cache
