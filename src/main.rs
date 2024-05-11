@@ -1,5 +1,5 @@
 use guards::can_open;
-use routes::{open, test};
+use routes::{open, test, warmup};
 use std::env;
 
 use actix_web::{guard, web, App, HttpServer};
@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
                     .guard(guard::fn_guard(can_open::can_open))
                     .service(test::handler),
             )
+            .service(web::scope("/_ah").service(warmup::handler))
     })
     .bind((BIND_ADDRESS, bind_port))?
     .run()
