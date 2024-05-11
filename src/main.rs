@@ -6,6 +6,7 @@ use actix_web::{guard, web, App, HttpServer};
 
 mod guards;
 mod routes;
+mod models;
 
 const BIND_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: &str = "3000";
@@ -21,12 +22,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(
                 web::scope("/open")
-                    .guard(guard::fn_guard(can_open::can_open))
+                    .guard(guard::fn_guard(can_open))
                     .service(open::handler),
             )
             .service(
                 web::scope("/test")
-                    .guard(guard::fn_guard(can_open::can_open))
+                    .guard(guard::fn_guard(can_open))
                     .service(test::handler),
             )
             .service(web::scope("/_ah").service(warmup::handler))
