@@ -1,13 +1,13 @@
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{post, HttpResponse, Responder};
 use crate::models::MessageResponse;
 
-#[get("/{name}")]
+#[post("/{name}")]
 async fn handler() -> impl Responder {
-    let message_response = MessageResponse {
+    let response = MessageResponse {
         message_id: "test_ok".to_string(),
     };
 
-    HttpResponse::Ok().json(message_response)
+    HttpResponse::Ok().json(response)
 }
 
 #[cfg(test)]
@@ -18,7 +18,7 @@ mod tests {
     #[test]
     async fn test_test_handler() {
         let app = test::init_service(App::new().service(handler)).await;
-        let req = test::TestRequest::get().uri("/test").to_request();
+        let req = test::TestRequest::post().uri("/test").to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200);
 

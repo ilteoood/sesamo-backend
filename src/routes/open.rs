@@ -1,6 +1,12 @@
-use actix_web::{get, web, Responder};
+use actix_web::{post, web, HttpResponse, Responder};
 
-#[get("/{name}")]
-async fn handler(name: web::Path<String>) -> impl Responder {
-    format!("Hello {}!", name)
+use crate::models::{MessageResponse, OpenRequest};
+
+#[post("/{name}")]
+async fn handler(name: web::Path<String>, request_body: web::JsonBody<OpenRequest>) -> impl Responder {
+    let response = MessageResponse {
+        message_id: "open_ok".to_string(),
+    };
+
+    HttpResponse::Ok().json(response)
 }
