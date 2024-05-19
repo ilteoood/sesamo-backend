@@ -13,3 +13,10 @@ pub struct OpenRequest {
     #[serde(rename = "serverId")]
     pub server_id: String,
 }
+
+
+#[derive(Serialize, Deserialize)]
+pub struct ServerDocument {
+    pub name: String,
+    pub r#type: String,
+}

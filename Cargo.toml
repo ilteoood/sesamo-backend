@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.5.1"
+firestore = "0.41.0"
+futures = "0.3.30"
 serde = {version = "1.0.201", features = ["derive"]}
