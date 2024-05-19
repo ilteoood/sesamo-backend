@@ -1768,6 +1768,7 @@ dependencies = [
  "firestore",
  "futures",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
