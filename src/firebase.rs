@@ -1,15 +1,16 @@
 use firestore::FirestoreDb;
-use futures::{future, stream::BoxStream, StreamExt};
+use futures::{future, StreamExt};
 use std::{collections::HashMap, env::set_var, error::Error, fs::File, io::BufReader, path::Path};
 
-use crate::models::{
-    FirestoreServiceAccount, ObjectRequest, ServerDocument, ServerDocumentBase, ServerDocumentConfiguration
+use crate::models::firebase::{
+    FirestoreServiceAccount, ObjectRequest, ServerDocument, ServerDocumentBase, ServerDocumentConfiguration, ServerAllowedDevices
 };
 
 const FIREBASE_CREDENTIALS: &str =
     "/Users/ilteoood/Documents/git/personal/sesamo-backend/firebase_reader.json";
 
 const SERVERS_COLLECTION: &str = "servers";
+const CONFIGURATIONS_COLLECTION: &str = "configurations";
 
 struct Firestore {
     firestore_db: FirestoreDb,
@@ -75,12 +76,13 @@ impl Firestore {
 
     async fn enrich_document(firestore_db: &FirestoreDb, doc: ServerDocumentBase) -> ServerDocument {
         let parent_path = firestore_db
-            .parent_path(SERVERS_COLLECTION, doc.id.clone()).unwrap();
+            .parent_path(SERVERS_COLLECTION, doc.id.clone())
+            .unwrap();
 
-        let allowed_devices: Vec<String> = firestore_db
+        let allowed_devices: ServerAllowedDevices = firestore_db
             .fluent()
             .select()
-            .by_id_in("configurations")
+            .by_id_in(CONFIGURATIONS_COLLECTION)
             .parent(&parent_path)
             .obj()
             .one("allowedDevices")
@@ -91,7 +93,7 @@ impl Firestore {
         let gate: ObjectRequest = firestore_db
             .fluent()
             .select()
-            .by_id_in("configurations")
+            .by_id_in(CONFIGURATIONS_COLLECTION)
             .parent(&parent_path)
             .obj()
             .one("gate")
@@ -102,7 +104,7 @@ impl Firestore {
         let wicket: ObjectRequest = firestore_db
             .fluent()
             .select()
-            .by_id_in("configurations")
+            .by_id_in(CONFIGURATIONS_COLLECTION)
             .parent(&parent_path)
             .obj()
             .one("wicket")
