@@ -12,13 +12,13 @@ const FIREBASE_CREDENTIALS: &str =
 const SERVERS_COLLECTION: &str = "servers";
 const CONFIGURATIONS_COLLECTION: &str = "configurations";
 
-struct Firestore {
+pub struct Firestore {
     firestore_db: FirestoreDb,
     server_map: HashMap<String, ServerDocument>,
 }
 
 impl Firestore {
-    async fn new() -> Result<Firestore, Box<dyn Error>> {
+    pub async fn new() -> Result<Firestore, Box<dyn Error>> {
         Self::configure_credentials();
 
         let firestore_service_account = Self::read_service_account()?;
@@ -31,6 +31,21 @@ impl Firestore {
             firestore_db,
             server_map,
         })
+    }
+
+    pub fn server_exists(self: &Self, server_id: String) -> bool {
+        self.server_map.contains_key(&server_id)
+    }
+
+    pub fn check_configuration(self: &Self, object: String) -> bool {
+        true
+        // TODO: this needs to get fixed with dynamic map of objects
+    }
+
+    pub fn has_device_access(self: &Self, device_id: String) -> bool {
+        let server_document = self.server_map.get(&device_id).unwrap();
+
+        server_document.configurations.allowed_devices.list.contains(&device_id)
     }
 
     fn configure_credentials() {
