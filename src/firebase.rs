@@ -1,10 +1,12 @@
 use firestore::FirestoreDb;
 use futures::{future, StreamExt};
 use std::{collections::HashMap, env::set_var, error::Error, fs::File, io::BufReader, path::Path};
-
 use crate::models::firebase::{
     FirestoreServiceAccount, ObjectRequest, ServerDocument, ServerDocumentBase, ServerDocumentConfiguration, ServerAllowedDevices
 };
+
+#[cfg(test)]
+use mockall::automock;
 
 const FIREBASE_CREDENTIALS: &str =
     "/Users/ilteoood/Documents/git/personal/sesamo-backend/firebase_reader.json";
@@ -17,6 +19,7 @@ pub struct Firestore {
     server_map: HashMap<String, ServerDocument>,
 }
 
+#[cfg_attr(test, automock)]
 impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {
         Self::configure_credentials();
