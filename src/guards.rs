@@ -2,14 +2,20 @@ use crate::firebase::Firestore;
 use actix_web::guard::GuardContext;
 use futures::executor::block_on;
 
-pub fn can_open(_guard: &GuardContext) -> bool {
-    let firebase_db = Firestore::new();
-    let result = block_on(firebase_db);
+use crate::models::OpenRequest;
 
-    if let Ok(instance) = result {
-        return instance.server_exists("server_id")
-            && instance.check_configuration("server_id", "object", )
-            && instance.has_device_access("server_id", "device_id");
+pub fn can_open(guard: &GuardContext) -> bool {
+    let firebase_db = Firestore::new();
+    let firebase_db = block_on(firebase_db);
+
+    let binding = guard.req_data();
+    let request: Option<&OpenRequest> = binding.get();
+
+
+    if let (Ok(firebase_db), Some(request)) = (firebase_db, request) {
+        return firebase_db.server_exists(&request.server_id)
+            && firebase_db.check_configuration(&request.server_id, "object", )
+            && firebase_db.has_device_access(&request.server_id, &request.device_id);
     }
 
     false
