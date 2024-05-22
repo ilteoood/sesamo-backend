@@ -15,10 +15,14 @@ pub struct OpenRequest {
 }
 
 pub mod firebase {
+    use std::collections::HashMap;
+
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize)]
     pub struct ObjectRequest {
+        #[serde(alias = "_firestore_id")]
+        pub id: String,
         pub body: String,
         pub url: String,
     }
@@ -30,8 +34,7 @@ pub mod firebase {
 
     pub struct ServerDocumentConfiguration {
         pub allowed_devices: ServerAllowedDevices,
-        pub gate: ObjectRequest,
-        pub wicket: ObjectRequest,
+        pub objects: HashMap<String, ObjectRequest>
     }
 
     #[derive(Serialize, Deserialize)]

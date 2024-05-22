@@ -1,9 +1,10 @@
+use crate::models::firebase::{
+    FirestoreServiceAccount, ObjectRequest, ServerAllowedDevices, ServerDocument,
+    ServerDocumentBase, ServerDocumentConfiguration,
+};
 use firestore::FirestoreDb;
 use futures::{future, StreamExt};
 use std::{collections::HashMap, env::set_var, error::Error, fs::File, io::BufReader, path::Path};
-use crate::models::firebase::{
-    FirestoreServiceAccount, ObjectRequest, ServerDocument, ServerDocumentBase, ServerDocumentConfiguration, ServerAllowedDevices
-};
 
 #[cfg(test)]
 use mockall::automock;
@@ -13,6 +14,7 @@ const FIREBASE_CREDENTIALS: &str =
 
 const SERVERS_COLLECTION: &str = "servers";
 const CONFIGURATIONS_COLLECTION: &str = "configurations";
+const ALLOWED_DEVICES_COLLECTION: &str = "allowedDevices";
 
 pub struct Firestore {
     firestore_db: FirestoreDb,
@@ -36,19 +38,22 @@ impl Firestore {
         })
     }
 
-    pub fn server_exists(self: &Self, server_id: String) -> bool {
-        self.server_map.contains_key(&server_id)
+    pub fn server_exists(self: &Self, server_id: &str) -> bool {
+        self.server_map.contains_key(server_id)
     }
 
-    pub fn check_configuration(self: &Self, object: String) -> bool {
-        true
-        // TODO: this needs to get fixed with dynamic map of objects
+    pub fn check_configuration(self: &Self, server_id: &str, object: &str) -> bool {
+        self.server_map.get(server_id).unwrap().configurations.objects.contains_key(object)
     }
 
-    pub fn has_device_access(self: &Self, device_id: String) -> bool {
-        let server_document = self.server_map.get(&device_id).unwrap();
+    pub fn has_device_access(self: &Self, server_id: &str, device_id: &str) -> bool {
+        let server_document = self.server_map.get(server_id).unwrap();
 
-        server_document.configurations.allowed_devices.list.contains(&device_id)
+        server_document
+            .configurations
+            .allowed_devices
+            .list
+            .contains(&String::from(device_id))
     }
 
     fn configure_credentials() {
@@ -92,7 +97,10 @@ impl Firestore {
         Ok(server_map)
     }
 
-    async fn enrich_document(firestore_db: &FirestoreDb, doc: ServerDocumentBase) -> ServerDocument {
+    async fn enrich_document(
+        firestore_db: &FirestoreDb,
+        doc: ServerDocumentBase,
+    ) -> ServerDocument {
         let parent_path = firestore_db
             .parent_path(SERVERS_COLLECTION, doc.id.clone())
             .unwrap();
@@ -103,37 +111,29 @@ impl Firestore {
             .by_id_in(CONFIGURATIONS_COLLECTION)
             .parent(&parent_path)
             .obj()
-            .one("allowedDevices")
+            .one(ALLOWED_DEVICES_COLLECTION)
             .await
             .unwrap()
             .unwrap();
 
-        let gate: ObjectRequest = firestore_db
+        let objects = firestore_db
             .fluent()
-            .select()
-            .by_id_in(CONFIGURATIONS_COLLECTION)
+            .list()
+            .from(CONFIGURATIONS_COLLECTION)
             .parent(&parent_path)
             .obj()
-            .one("gate")
+            .stream_all()
             .await
             .unwrap()
-            .unwrap();
-
-        let wicket: ObjectRequest = firestore_db
-            .fluent()
-            .select()
-            .by_id_in(CONFIGURATIONS_COLLECTION)
-            .parent(&parent_path)
-            .obj()
-            .one("wicket")
+            .collect::<Vec<ObjectRequest>>()
             .await
-            .unwrap()
-            .unwrap();
+            .into_iter()
+            .map(|doc| (doc.id.clone(), doc))
+            .collect();
 
         let configurations = ServerDocumentConfiguration {
             allowed_devices,
-            gate,
-            wicket,
+            objects,
         };
 
         ServerDocument {
