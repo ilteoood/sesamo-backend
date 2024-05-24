@@ -11,10 +11,11 @@ pub fn can_open(guard: &GuardContext) -> bool {
     let binding = guard.req_data();
     let request: Option<&OpenRequest> = binding.get();
 
+    let object: Option<&str> = guard.head().uri.path().split('/').last();
 
-    if let (Ok(firebase_db), Some(request)) = (firebase_db, request) {
+    if let (Ok(firebase_db), Some(request), Some(object)) = (firebase_db, request, object) {
         return firebase_db.server_exists(&request.server_id)
-            && firebase_db.check_configuration(&request.server_id, "object", )
+            && firebase_db.check_configuration(&request.server_id, object)
             && firebase_db.has_device_access(&request.server_id, &request.device_id);
     }
 
