@@ -1,6 +1,7 @@
 import {HttpService} from '@nestjs/axios'
 import {Inject, Injectable, Logger} from '@nestjs/common'
 import {firstValueFrom} from 'rxjs'
+import FormData from 'form-data'
 
 import {ActionBase} from '../ActionBase'
 
@@ -23,7 +24,11 @@ export class HttpPostHandler extends ActionBase {
         return configuration.url
     }
 
-    private buildBody(configuration: Record<string, string>): URLSearchParams {
-        return new URLSearchParams(configuration.body)
+    private buildBody(configuration: Record<string, string>): FormData {
+        const formData = new FormData();
+        
+        new URLSearchParams(configuration.body).forEach((value, key) => formData.append(key, value));
+
+        return formData;
     }
 }
