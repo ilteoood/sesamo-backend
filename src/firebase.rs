@@ -38,11 +38,11 @@ impl Firestore {
         })
     }
 
-    pub fn server_exists(self: &Self, server_id: &str) -> bool {
+    pub fn server_exists(&self, server_id: &str) -> bool {
         self.server_map.contains_key(server_id)
     }
 
-    pub fn check_configuration(self: &Self, server_id: &str, object: &str) -> bool {
+    pub fn check_configuration(&self, server_id: &str, object: &str) -> bool {
         self.server_map
             .get(server_id)
             .unwrap()
@@ -51,7 +51,7 @@ impl Firestore {
             .contains_key(object)
     }
 
-    pub fn has_device_access(self: &Self, server_id: &str, device_id: &str) -> bool {
+    pub fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
         let server_document = self.server_map.get(server_id).unwrap();
 
         server_document
