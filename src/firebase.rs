@@ -43,7 +43,12 @@ impl Firestore {
     }
 
     pub fn check_configuration(self: &Self, server_id: &str, object: &str) -> bool {
-        self.server_map.get(server_id).unwrap().configurations.objects.contains_key(object)
+        self.server_map
+            .get(server_id)
+            .unwrap()
+            .configurations
+            .objects
+            .contains_key(object)
     }
 
     pub fn has_device_access(self: &Self, server_id: &str, device_id: &str) -> bool {

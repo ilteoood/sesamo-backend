@@ -4,10 +4,10 @@ use std::env;
 
 use actix_web::{guard, web, App, HttpServer};
 
-mod guards;
-mod routes;
-mod models;
 mod firebase;
+mod guards;
+mod models;
+mod routes;
 
 const BIND_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: &str = "3000";

@@ -1,5 +1,5 @@
-use actix_web::{post, HttpResponse, Responder};
 use crate::models::MessageResponse;
+use actix_web::{post, HttpResponse, Responder};
 
 #[post("/{name}")]
 async fn handler() -> impl Responder {

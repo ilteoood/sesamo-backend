@@ -34,7 +34,7 @@ pub mod firebase {
 
     pub struct ServerDocumentConfiguration {
         pub allowed_devices: ServerAllowedDevices,
-        pub objects: HashMap<String, ObjectRequest>
+        pub objects: HashMap<String, ObjectRequest>,
     }
 
     #[derive(Serialize, Deserialize)]
