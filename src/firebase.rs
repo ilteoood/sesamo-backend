@@ -2,12 +2,20 @@ use crate::models::firebase::{
     FirestoreServiceAccount, ObjectRequest, ServerAllowedDevices, ServerDocument,
     ServerDocumentBase, ServerDocumentConfiguration,
 };
-use firestore::FirestoreDb;
+use firestore::{
+    FirestoreDb, FirestoreListenEvent, FirestoreListenerTarget,
+    FirestoreTempFilesListenStateStorage,
+};
 use futures::{future, StreamExt};
-use std::{collections::HashMap, env::set_var, error::Error, fs::File, io::BufReader, path::Path};
-
-#[cfg(test)]
-use mockall::automock;
+use std::{
+    collections::HashMap,
+    env::set_var,
+    error::Error,
+    fs::File,
+    io::BufReader,
+    path::Path,
+    sync::{Arc, RwLock},
+};
 
 const FIREBASE_CREDENTIALS: &str =
     "/Users/ilteoood/Documents/git/personal/sesamo-backend/firebase_reader.json";
@@ -17,11 +25,11 @@ const CONFIGURATIONS_COLLECTION: &str = "configurations";
 const ALLOWED_DEVICES_COLLECTION: &str = "allowedDevices";
 
 pub struct Firestore {
-    firestore_db: FirestoreDb,
-    server_map: HashMap<String, ServerDocument>,
+    server_map: Arc<RwLock<HashMap<String, ServerDocument>>>,
 }
 
-#[cfg_attr(test, automock)]
+const TARGET_SERVERS: FirestoreListenerTarget = FirestoreListenerTarget::new(94_u32);
+
 impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {
         Self::configure_credentials();
@@ -32,18 +40,61 @@ impl Firestore {
 
         let server_map = Self::build_server_map(&firestore_db).await?;
 
+        let mut listener = firestore_db
+            .create_listener(FirestoreTempFilesListenStateStorage::new())
+            .await?;
+
+        firestore_db
+            .fluent()
+            .select()
+            .from(SERVERS_COLLECTION)
+            .listen()
+            .add_target(TARGET_SERVERS, &mut listener)?;
+
+        let server_map_lock = Arc::new(RwLock::new(server_map));
+        let server_map_clone = Arc::clone(&server_map_lock.clone());
+
+        listener
+            .start(move |event| {
+                let value = firestore_db.clone();
+                let server_map_lock = Arc::clone(&server_map_lock.clone());
+
+                async move {
+                    match event {
+                        FirestoreListenEvent::DocumentChange(ref doc_change) => {
+                            if let Some(doc) = &doc_change.document {
+                                let doc: ServerDocumentBase =
+                                    FirestoreDb::deserialize_doc_to::<ServerDocumentBase>(doc)
+                                        .expect("Deserialized object");
+                                let doc_enriched = Self::enrich_document(&value, doc).await;
+
+                                let mut server_map =
+                                    server_map_lock.write().expect("Poisoned lock");
+                                server_map.insert(doc_enriched.id.clone(), doc_enriched);
+                            }
+                        }
+                        _ => {
+                            println!("Received a listen response event to handle: {event:?}");
+                        }
+                    }
+                    Ok(())
+                }
+            })
+            .await?;
+
         Ok(Self {
-            firestore_db,
-            server_map,
+            server_map: server_map_clone,
         })
     }
 
     pub fn server_exists(&self, server_id: &str) -> bool {
-        self.server_map.contains_key(server_id)
+        self.server_map.read().unwrap().contains_key(server_id)
     }
 
     pub fn check_configuration(&self, server_id: &str, object: &str) -> bool {
         self.server_map
+            .read()
+            .unwrap()
             .get(server_id)
             .unwrap()
             .configurations
@@ -52,9 +103,11 @@ impl Firestore {
     }
 
     pub fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
-        let server_document = self.server_map.get(server_id).unwrap();
-
-        server_document
+        self.server_map
+            .read()
+            .unwrap()
+            .get(server_id)
+            .unwrap()
             .configurations
             .allowed_devices
             .list
