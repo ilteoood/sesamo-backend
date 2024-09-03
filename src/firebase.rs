@@ -16,6 +16,7 @@ use std::{
     path::Path,
     sync::{Arc, RwLock},
 };
+use tokio::sync::OnceCell;
 
 const FIREBASE_CREDENTIALS: &str =
     "/Users/ilteoood/Documents/git/personal/sesamo-backend/firebase_reader.json";
@@ -29,6 +30,13 @@ pub struct Firestore {
 }
 
 const TARGET_SERVERS: FirestoreListenerTarget = FirestoreListenerTarget::new(94_u32);
+
+static ONCE: OnceCell<Firestore> = OnceCell::const_new();
+
+pub async fn get_firestore_instance() -> &'static Firestore {
+    ONCE.get_or_init(|| async { Firestore::new().await.unwrap() })
+        .await
+}
 
 impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {

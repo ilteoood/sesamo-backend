@@ -1872,6 +1872,7 @@ dependencies = [
  "futures",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
