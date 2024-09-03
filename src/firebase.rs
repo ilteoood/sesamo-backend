@@ -18,8 +18,7 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-const FIREBASE_CREDENTIALS: &str =
-    "/Users/ilteoood/Documents/git/personal/sesamo-backend/firebase_reader.json";
+const FIREBASE_CREDENTIALS: &str = "./firebase_reader.json";
 
 const SERVERS_COLLECTION: &str = "servers";
 const CONFIGURATIONS_COLLECTION: &str = "configurations";
