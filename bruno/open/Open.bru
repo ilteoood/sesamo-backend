@@ -1,0 +1,18 @@
+meta {
+  name: Open
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{HOST}}/open
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "serverId": "foo",
+    "deviceId": "faa"
+  }
+}
