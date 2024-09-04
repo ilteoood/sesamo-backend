@@ -1,3 +1,4 @@
+use firebase::get_firestore_instance;
 use guards::can_open;
 use routes::{open, test, warmup};
 use std::env;
@@ -18,6 +19,8 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or(DEFAULT_PORT.to_string())
         .parse()
         .unwrap();
+
+    get_firestore_instance().await;
 
     HttpServer::new(|| {
         App::new()
