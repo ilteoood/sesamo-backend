@@ -3,18 +3,11 @@ use actix_web::{web::Path, HttpResponse};
 
 use crate::models::OpenRequest;
 
-pub async fn can_open_guard(request: OpenRequest, path: Path<String>) -> Result<(), HttpResponse> {
+pub async fn can_open_guard(
+    request: OpenRequest,
+    object: Path<String>,
+) -> Result<(), HttpResponse> {
     let firebase_db = get_firestore_instance().await;
-
-    let object = path.split('/').last();
-
-    if object.is_none() {
-        return Err(HttpResponse::InternalServerError().json(MessageResponse {
-            message_id: String::from("wrong_request"),
-        }));
-    }
-
-    let object = object.unwrap();
 
     if !firebase_db.server_exists(&request.server_id) {
         return Err(HttpResponse::InternalServerError().json(MessageResponse {
@@ -22,7 +15,7 @@ pub async fn can_open_guard(request: OpenRequest, path: Path<String>) -> Result<
         }));
     }
 
-    if !firebase_db.check_configuration(&request.server_id, object) {
+    if !firebase_db.check_configuration(&request.server_id, object.as_str()) {
         return Err(HttpResponse::InternalServerError().json(MessageResponse {
             message_id: String::from("invalid_action"),
         }));
