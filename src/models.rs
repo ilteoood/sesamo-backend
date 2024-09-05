@@ -45,10 +45,16 @@ pub mod firebase {
         pub r#type: String,
     }
 
+    #[derive(Serialize, Deserialize, Clone, Copy)]
+    pub enum ServerDocumentType {
+        IFTTT,
+        HttpPost,
+    }
+
     pub struct ServerDocument {
         pub id: String,
         pub name: String,
-        pub r#type: String,
+        pub r#type: ServerDocumentType,
         pub configurations: ServerDocumentConfiguration,
     }
 

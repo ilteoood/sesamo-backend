@@ -4,8 +4,8 @@ use actix_web::{web::Path, HttpResponse};
 use crate::models::OpenRequest;
 
 pub async fn can_open_guard(
-    request: OpenRequest,
-    object: Path<String>,
+    request: &OpenRequest,
+    object: &Path<String>,
 ) -> Result<(), HttpResponse> {
     let firebase_db = get_firestore_instance().await;
 

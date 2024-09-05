@@ -9,7 +9,7 @@ async fn handler(
     object: web::Path<String>,
     request_body: web::Json<OpenRequest>,
 ) -> impl Responder {
-    let has_access = can_open_guard(request_body.into_inner(), object).await;
+    let has_access = can_open_guard(&request_body.into_inner(), &object).await;
 
     if has_access.is_err() {
         return has_access.err().unwrap();

@@ -1,6 +1,6 @@
 use crate::models::firebase::{
     FirestoreServiceAccount, ObjectRequest, ServerAllowedDevices, ServerDocument,
-    ServerDocumentBase, ServerDocumentConfiguration,
+    ServerDocumentBase, ServerDocumentConfiguration, ServerDocumentType,
 };
 use firestore::{
     FirestoreDb, FirestoreListenEvent, FirestoreListenerTarget,
@@ -96,6 +96,15 @@ impl Firestore {
 
     pub fn server_exists(&self, server_id: &str) -> bool {
         self.server_map.read().unwrap().contains_key(server_id)
+    }
+
+    pub fn get_server_type(&self, server_id: &str) -> ServerDocumentType {
+        self.server_map
+            .read()
+            .unwrap()
+            .get(server_id)
+            .map(|s| s.r#type)
+            .unwrap()
     }
 
     pub fn check_configuration(&self, server_id: &str, object: &str) -> bool {
@@ -205,7 +214,11 @@ impl Firestore {
             configurations,
             id: doc.id,
             name: doc.name,
-            r#type: doc.r#type,
+            r#type: match doc.r#type.as_str() {
+                "ifttt" => ServerDocumentType::IFTTT,
+                "httpPost" => ServerDocumentType::HttpPost,
+                _ => panic!("Unknown server type: {}", doc.r#type),
+            },
         }
     }
 }
