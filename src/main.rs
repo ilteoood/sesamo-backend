@@ -1,9 +1,7 @@
-use firebase::get_firestore_instance;
-use guards::can_open;
 use routes::{open, test, warmup};
 use std::env;
 
-use actix_web::{guard, web, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 
 mod firebase;
 mod guards;
@@ -20,20 +18,10 @@ async fn main() -> std::io::Result<()> {
         .parse()
         .unwrap();
 
-    get_firestore_instance().await;
-
     HttpServer::new(|| {
         App::new()
-            .service(
-                web::scope("/open")
-                    .guard(guard::fn_guard(can_open))
-                    .service(open::handler),
-            )
-            .service(
-                web::scope("/test")
-                    .guard(guard::fn_guard(can_open))
-                    .service(test::handler),
-            )
+            .service(web::scope("/open").service(open::handler))
+            .service(web::scope("/test").service(test::handler))
             .service(web::scope("/_ah").service(warmup::handler))
     })
     .bind((BIND_ADDRESS, bind_port))?
