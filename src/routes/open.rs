@@ -28,11 +28,10 @@ async fn http_post_handler(
 ) -> Result<reqwest::Response, reqwest::Error> {
     let client = reqwest::Client::new();
 
-    let body: Vec<(String, String)> = object_configuration
+    let body: Vec<(&str, &str)> = object_configuration
         .body
         .split("&")
         .map(|x| x.split("=").collect_tuple().unwrap())
-        .map(|(x, y)| (x.to_string(), y.to_string()))
         .collect();
 
     client
