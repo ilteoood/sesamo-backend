@@ -1997,6 +1997,7 @@ dependencies = [
  "actix-web",
  "firestore",
  "futures",
+ "itertools",
  "reqwest",
  "serde",
  "serde_json",
