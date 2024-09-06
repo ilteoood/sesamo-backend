@@ -19,8 +19,8 @@ pub mod firebase {
 
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize)]
-    pub struct ObjectRequest {
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct ObjectConfiguration {
         #[serde(alias = "_firestore_id")]
         pub id: String,
         pub body: String,
@@ -34,7 +34,7 @@ pub mod firebase {
 
     pub struct ServerDocumentConfiguration {
         pub allowed_devices: ServerAllowedDevices,
-        pub objects: HashMap<String, ObjectRequest>,
+        pub objects: HashMap<String, ObjectConfiguration>,
     }
 
     #[derive(Serialize, Deserialize)]
@@ -47,13 +47,11 @@ pub mod firebase {
 
     #[derive(Serialize, Deserialize, Clone, Copy)]
     pub enum ServerDocumentType {
-        IFTTT,
         HttpPost,
     }
 
     pub struct ServerDocument {
         pub id: String,
-        pub name: String,
         pub r#type: ServerDocumentType,
         pub configurations: ServerDocumentConfiguration,
     }

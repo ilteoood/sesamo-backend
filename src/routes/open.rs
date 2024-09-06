@@ -1,13 +1,13 @@
 use actix_web::{
     post,
-    web::{self, Path},
+    web::{self},
     HttpResponse, Responder,
 };
 
 use crate::{
     firebase::get_firestore_instance,
     guards::can_open_guard,
-    models::{self, MessageResponse, OpenRequest},
+    models::{self, firebase::ObjectConfiguration, MessageResponse, OpenRequest},
 };
 
 fn ok_response() -> HttpResponse {
@@ -16,9 +16,23 @@ fn ok_response() -> HttpResponse {
     })
 }
 
-fn http_post_handler(object: Path<String>) {}
+fn ko_response() -> HttpResponse {
+    HttpResponse::InternalServerError().json(MessageResponse {
+        message_id: "ko".to_string(),
+    })
+}
 
-fn ifttt_handler(object: Path<String>) {}
+async fn http_post_handler(
+    object_configuration: ObjectConfiguration,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let client = reqwest::Client::new();
+
+    client
+        .post(object_configuration.url)
+        .form(object_configuration.body.as_str())
+        .send()
+        .await
+}
 
 #[post("/{object}")]
 async fn handler(
@@ -35,13 +49,18 @@ async fn handler(
 
     let firebase_instance = get_firestore_instance().await;
     let firebase_server_type = firebase_instance.get_server_type(&request_body.server_id);
+    let object_configuration =
+        firebase_instance.get_object_configuration(&request_body.server_id, &object);
 
-    match firebase_server_type {
-        models::firebase::ServerDocumentType::HttpPost => {
-            http_post_handler(object);
+    let handler_result = match firebase_server_type {
+        models::firebase::ServerDocumentType::HttpPost => http_post_handler(object_configuration),
+    };
+
+    if let Ok(result) = handler_result.await {
+        if result.status().is_success() {
+            return ok_response();
         }
-        models::firebase::ServerDocumentType::IFTTT => {}
     }
 
-    ok_response()
+    ko_response()
 }

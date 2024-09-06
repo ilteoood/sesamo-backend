@@ -1,5 +1,5 @@
 use crate::models::firebase::{
-    FirestoreServiceAccount, ObjectRequest, ServerAllowedDevices, ServerDocument,
+    FirestoreServiceAccount, ObjectConfiguration, ServerAllowedDevices, ServerDocument,
     ServerDocumentBase, ServerDocumentConfiguration, ServerDocumentType,
 };
 use firestore::{
@@ -118,6 +118,19 @@ impl Firestore {
             .contains_key(object)
     }
 
+    pub fn get_object_configuration(&self, server_id: &str, object: &str) -> ObjectConfiguration {
+        self.server_map
+            .read()
+            .unwrap()
+            .get(server_id)
+            .unwrap()
+            .configurations
+            .objects
+            .get(object)
+            .unwrap()
+            .clone()
+    }
+
     pub fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
         self.server_map
             .read()
@@ -199,7 +212,7 @@ impl Firestore {
             .stream_all()
             .await
             .unwrap()
-            .collect::<Vec<ObjectRequest>>()
+            .collect::<Vec<ObjectConfiguration>>()
             .await
             .into_iter()
             .map(|doc| (doc.id.clone(), doc))
@@ -213,9 +226,7 @@ impl Firestore {
         ServerDocument {
             configurations,
             id: doc.id,
-            name: doc.name,
             r#type: match doc.r#type.as_str() {
-                "ifttt" => ServerDocumentType::IFTTT,
                 "httpPost" => ServerDocumentType::HttpPost,
                 _ => panic!("Unknown server type: {}", doc.r#type),
             },
