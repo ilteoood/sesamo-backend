@@ -58,27 +58,7 @@ pub mod firebase {
 
     #[derive(Deserialize, Serialize)]
     pub struct FirestoreServiceAccount {
-        #[serde(rename = "type")]
-        pub service_account_type: String,
         #[serde(rename = "project_id")]
         pub project_id: String,
-        #[serde(rename = "private_key_id")]
-        pub private_key_id: String,
-        #[serde(rename = "private_key")]
-        pub private_key: String,
-        #[serde(rename = "client_email")]
-        pub client_email: String,
-        #[serde(rename = "client_id")]
-        pub client_id: String,
-        #[serde(rename = "auth_uri")]
-        pub auth_uri: String,
-        #[serde(rename = "token_uri")]
-        pub token_uri: String,
-        #[serde(rename = "auth_provider_x509_cert_url")]
-        pub auth_provider_x509_cert_url: String,
-        #[serde(rename = "client_x509_cert_url")]
-        pub client_x509_cert_url: String,
-        #[serde(rename = "universe_domain")]
-        pub universe_domain: String,
     }
 }
