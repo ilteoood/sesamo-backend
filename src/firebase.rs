@@ -3,13 +3,13 @@ use crate::models::firebase::{
     ServerDocumentBase, ServerDocumentConfiguration, ServerDocumentType,
 };
 use firestore::{
-    FirestoreDb, FirestoreListenEvent, FirestoreListenerTarget,
-    FirestoreTempFilesListenStateStorage,
+    FirestoreDb, FirestoreDbOptions, FirestoreListenEvent, FirestoreListenerTarget,
+    FirestoreTempFilesListenStateStorage, FIREBASE_DEFAULT_DATABASE_ID,
 };
 use futures::{future, StreamExt};
 use std::{
     collections::HashMap,
-    env::set_var,
+    env::{self, set_var},
     error::Error,
     fs::File,
     io::BufReader,
@@ -43,7 +43,13 @@ impl Firestore {
 
         let firestore_service_account = Self::read_service_account()?;
 
-        let firestore_db = FirestoreDb::new(firestore_service_account.project_id.as_str()).await?;
+        let firestore_options = FirestoreDbOptions::new(firestore_service_account.project_id)
+            .with_database_id(
+                env::var("FIRESTORE_DATABASE")
+                    .unwrap_or(String::from(FIREBASE_DEFAULT_DATABASE_ID)),
+            );
+
+        let firestore_db = FirestoreDb::with_options(firestore_options).await?;
 
         let server_map = Self::build_server_map(&firestore_db).await?;
 
