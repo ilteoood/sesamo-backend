@@ -28,20 +28,19 @@ jobs:
       - name: Build
         run: cargo build --target x86_64-unknown-linux-musl --release
       - name: Move binary
-        run: mv ./target/x86_64-unknown-linux-musl/release/sesamo-backend ./sesamo-backend && ls -lah
+        run: mv ./target/x86_64-unknown-linux-musl/release/sesamo-backend ./sesamo-backend
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Set up Docker Buildx
-        run: ls -lah
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           push: true
           tags: ilteoood/sesamo-backend
           file: ./Dockerfile-dockerhub
+          context: .
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
