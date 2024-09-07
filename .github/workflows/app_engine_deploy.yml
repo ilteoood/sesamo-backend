@@ -19,7 +19,7 @@ jobs:
       - name: Test and build binary
         uses: houseabsolute/actions-rust-cross@v0
         with:
-          command: both
+          command: test
           target: x86_64-unknown-linux-musl
           args: "--locked --release"
           strip: true

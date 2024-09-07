@@ -21,3 +21,6 @@ Cargo.lock
 #.idea/
 firebase_reader.json
 .DS_Store
+.gcloudignore
+.git
+.gitignore
