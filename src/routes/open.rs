@@ -57,7 +57,7 @@ async fn handler(
     let has_access = can_open_guard(&request_body, &object).await;
 
     if has_access.is_err() {
-        return has_access.err().unwrap();
+        return HttpResponse::InternalServerError().json(has_access.err().unwrap());
     }
 
     let firebase_instance = get_firestore_instance().await;
