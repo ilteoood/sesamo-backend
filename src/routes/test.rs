@@ -1,8 +1,18 @@
+use std::sync::LazyLock;
+
 use crate::{
     guards::can_open_guard,
     models::{MessageResponse, OpenRequest},
 };
 use actix_web::{post, web, HttpResponse, Responder};
+
+static OK_MESSAGE: LazyLock<MessageResponse> = LazyLock::new(|| MessageResponse {
+    message_id: String::from("test_ok"),
+});
+
+fn ok_response() -> HttpResponse {
+    HttpResponse::Ok().json(&*OK_MESSAGE)
+}
 
 #[post("/{object}")]
 async fn handler(
@@ -15,26 +25,47 @@ async fn handler(
         return has_access.err().unwrap();
     }
 
-    let response = MessageResponse {
-        message_id: "test_ok".to_string(),
-    };
-
-    HttpResponse::Ok().json(response)
+    ok_response()
 }
 
 #[cfg(test)]
 mod tests {
+    use std::env;
+
     use super::*;
-    use actix_web::{test, App};
+    use actix_web::{http::StatusCode, test, App};
 
     #[test]
-    async fn test_test_handler() {
-        let app = test::init_service(App::new().service(handler)).await;
-        let req = test::TestRequest::post().uri("/test").to_request();
-        let resp = test::call_service(&app, req).await;
-        assert_eq!(resp.status(), 200);
+    async fn test_ok_response() {
+        let response = ok_response();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
 
-        let message_response: MessageResponse = test::read_body_json(resp).await;
-        assert_eq!(message_response.message_id, "test_ok");
+    async fn invoke_handler(server_id: &str, device_id: &str) -> MessageResponse {
+        env::set_var("FIRESTORE_DATABASE", "test");
+        let app = test::init_service(App::new().service(handler)).await;
+        let req = test::TestRequest::post()
+            .uri("/gate")
+            .set_json(&OpenRequest {
+                server_id: server_id.to_string(),
+                device_id: device_id.to_string(),
+            })
+            .to_request();
+
+        let response = test::call_service(&app, req).await;
+
+        test::read_body_json(response).await
+    }
+
+    #[test]
+    async fn test_invalid_server_handler() {
+        let response = invoke_handler("test", "test").await;
+        assert_eq!(response.message_id, "invalid_server");
+    }
+
+    #[test]
+    async fn test_ok_handler() {
+        let response = invoke_handler("test_server", "test_device").await;
+        assert_eq!(response, *OK_MESSAGE);
     }
 }
