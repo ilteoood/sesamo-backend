@@ -16,15 +16,16 @@ jobs:
         run: echo "${{ secrets.GCP_SA_KEY }}" > ./firebase_reader.json
       - name: Cache
         uses: Swatinem/rust-cache@v2
-      - name: Build binary
+      - name: Test and build binary
         uses: houseabsolute/actions-rust-cross@v0
         with:
-          command: build
+          command: both
           target: x86_64-unknown-linux-musl
           args: "--locked --release"
           strip: true
         env:
           FIRESTORE_DATABASE: test
+          RUST_BACKTRACE: 1
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
