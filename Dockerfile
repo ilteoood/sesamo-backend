@@ -1,5 +1,6 @@
 FROM rust:1 AS builder
 WORKDIR /builder
+RUN rustup target add x86_64-unknown-linux-musl
 COPY . .
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
