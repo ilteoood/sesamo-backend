@@ -13,7 +13,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v4
       - name: Restore credentials
-        run: echo "${{ secrets.FB_READER }}" > ./firebase_reader.json
+        run: echo "${{ secrets.GCP_SA_KEY }}" | base64 -d > ./firebase_reader.json
       - name: Cache
         uses: Swatinem/rust-cache@v2
       - uses: actions-rust-lang/setup-rust-toolchain@v1
