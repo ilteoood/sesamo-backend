@@ -1,7 +1,7 @@
+use actix_web::{middleware::Logger, web, App, HttpServer};
+use env_logger;
 use routes::{open, test, warmup};
 use std::env;
-
-use actix_web::{web, App, HttpServer};
 
 mod firebase;
 mod guards;
@@ -18,8 +18,11 @@ async fn main() -> std::io::Result<()> {
         .parse()
         .unwrap();
 
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
     HttpServer::new(|| {
         App::new()
+            .wrap(Logger::default())
             .service(web::scope("/open").service(open::handler))
             .service(web::scope("/test").service(test::handler))
             .service(web::scope("/_ah").service(warmup::handler))

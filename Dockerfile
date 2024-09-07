@@ -6,3 +6,4 @@ RUN ./sesamo-backend-* ./sesamo-backend
 
 FROM scratch
 COPY --from=builder --chmod=755 /builder/sesamo-backend ./sesamo-backend
+ENTRYPOINT ["./sesamo-backend"]
