@@ -16,13 +16,9 @@ jobs:
         run: echo "${{ secrets.GCP_SA_KEY }}" > ./firebase_reader.json
       - name: Cache
         uses: Swatinem/rust-cache@v2
-      - name: Test and build binary
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: test
-          target: x86_64-unknown-linux-musl
-          args: "--locked --release"
-          strip: true
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Test
+        run: cargo test
         env:
           FIRESTORE_DATABASE: test
       - uses: 'google-github-actions/auth@v2'
