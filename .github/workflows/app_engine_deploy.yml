@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feat/rust
 
 jobs:
   build:
@@ -13,14 +14,21 @@ jobs:
     name: Publish to app engine
     steps:
       - name: Checkout master
-        uses: actions/checkout@master
-      - name: Turnstyle
-        uses: softprops/turnstyle@v1
+        uses: actions/checkout@v4
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Restore credentials
+        run: echo "${{ secrets.GCP_SA_KEY }}" > ./firestore_reader.json
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: both
+          target: x86_64-unknown-linux-musl
+          args: "--locked --release"
+          strip: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Test
-        run: cargo test
+          FIRESTORE_DATABASE: test
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
