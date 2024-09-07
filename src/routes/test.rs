@@ -21,11 +21,9 @@ async fn handler(
 ) -> impl Responder {
     let has_access = can_open_guard(&request_body.into_inner(), &object).await;
 
-    if has_access.is_err() {
-        return HttpResponse::InternalServerError().json(has_access.err().unwrap());
-    }
-
-    ok_response()
+    has_access
+        .map(|_| ok_response())
+        .unwrap_or_else(|err| HttpResponse::InternalServerError().json(err))
 }
 
 #[cfg(test)]
