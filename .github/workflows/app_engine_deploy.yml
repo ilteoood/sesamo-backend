@@ -18,7 +18,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Test
-        run: cargo test
+        run: ls -lah && cargo test
         env:
           FIRESTORE_DATABASE: test
       - uses: 'google-github-actions/auth@v2'
