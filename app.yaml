@@ -1,7 +1,17 @@
 runtime: custom
 env: flex
+
+handlers:
+  - url: /.*
+    secure: always
+    script: auto
 instance_class: F1
 automatic_scaling:
-  min_num_instances: 1
-  max_num_instances: 1
-
+  max_instances: 1
+  min_instances: 1
+inbound_services:
+  - warmup
+resources:
+  cpu: 1
+  memory_gb: 0.1
+  disk_size_gb: 0
