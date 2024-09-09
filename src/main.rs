@@ -1,5 +1,4 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
-use env_logger;
 use routes::{open, test, warmup};
 use std::env;
 
