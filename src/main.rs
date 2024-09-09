@@ -7,7 +7,7 @@ mod guards;
 mod models;
 mod routes;
 
-const BIND_ADDRESS: &str = "127.0.0.1";
+const BIND_ADDRESS: &str = "0.0.0.0";
 const DEFAULT_PORT: &str = "3000";
 
 #[actix_web::main]
