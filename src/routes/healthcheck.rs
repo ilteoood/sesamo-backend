@@ -1,6 +1,6 @@
 use actix_web::{get, HttpResponse, Responder};
 
-#[get("/warmup")]
+#[get("/")]
 async fn handler() -> impl Responder {
     HttpResponse::Ok()
 }
@@ -13,7 +13,7 @@ mod tests {
     #[test]
     async fn test_warmup_handler() {
         let app = test::init_service(App::new().service(handler)).await;
-        let req = test::TestRequest::get().uri("/warmup").to_request();
+        let req = test::TestRequest::get().uri("/").to_request();
         let resp = test::call_service(&app, req).await;
         assert_eq!(resp.status(), 200);
     }
