@@ -1,5 +1,5 @@
-use actix_web::{middleware::Logger, web, App, HttpServer};
-use routes::{healthcheck, open, test};
+use actix_web::{middleware::Logger, web, App, HttpResponse, HttpServer};
+use routes::{open, test};
 use std::env;
 
 mod firebase;
@@ -24,7 +24,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .service(web::scope("/open").service(open::handler))
             .service(web::scope("/test").service(test::handler))
-            .service(web::scope("/_ah/warmup").service(healthcheck::handler))
+            .service(web::scope("/_ah").service(web::resource("/warmup").to(HttpResponse::Ok)))
     })
     .bind((BIND_ADDRESS, bind_port))?
     .run()
