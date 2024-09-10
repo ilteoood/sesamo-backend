@@ -1,3 +1,0 @@
-FROM scratch
-COPY --chmod=755 ./sesamo-backend .
-ENTRYPOINT ["./sesamo-backend"]
