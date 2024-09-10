@@ -24,8 +24,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .service(web::scope("/open").service(open::handler))
             .service(web::scope("/test").service(test::handler))
-            .service(web::scope("/readiness_check").service(healthcheck::handler))
-            .service(web::scope("/liveness_check").service(healthcheck::handler))
+            .service(web::scope("/_ah/warmup").service(healthcheck::handler))
     })
     .bind((BIND_ADDRESS, bind_port))?
     .run()
