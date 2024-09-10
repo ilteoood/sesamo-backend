@@ -22,6 +22,7 @@ const SERVERS_COLLECTION: &str = "servers";
 const CONFIGURATIONS_COLLECTION: &str = "configurations";
 const ALLOWED_DEVICES_COLLECTION: &str = "allowedDevices";
 const GOOGLE_APPLICATION_CREDENTIALS: &str = "GOOGLE_APPLICATION_CREDENTIALS";
+const PROJECT_ID: &str = "GOOGLE_CLOUD_PROJECT";
 
 pub struct Firestore {
     server_map: Arc<RwLock<HashMap<String, ServerDocument>>>,
@@ -40,9 +41,7 @@ impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {
         Self::configure_credentials();
 
-        let firestore_service_account = Self::read_service_account()?;
-
-        let firestore_options = FirestoreDbOptions::new(firestore_service_account.project_id)
+        let firestore_options = FirestoreDbOptions::new(env::var(PROJECT_ID)?)
             .with_database_id(
                 env::var("FIRESTORE_DATABASE")
                     .unwrap_or(String::from(FIREBASE_DEFAULT_DATABASE_ID)),
@@ -151,7 +150,10 @@ impl Firestore {
     fn configure_credentials() {
         let firebase_credentials = "./firebase_reader.json";
         if Path::new(firebase_credentials).exists() {
-            set_var("GOOGLE_APPLICATION_CREDENTIALS", firebase_credentials)
+            set_var("GOOGLE_APPLICATION_CREDENTIALS", firebase_credentials);
+
+            let service_account = Self::read_service_account().unwrap();
+            set_var(PROJECT_ID, service_account.project_id);
         }
     }
 
