@@ -1,16 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct MessageResponse {
-    #[serde(rename = "messageId")]
     pub message_id: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OpenRequest {
-    #[serde(rename = "deviceId")]
     pub device_id: String,
-    #[serde(rename = "serverId")]
     pub server_id: String,
 }
 
@@ -58,7 +57,6 @@ pub mod firebase {
 
     #[derive(Deserialize, Serialize)]
     pub struct FirestoreServiceAccount {
-        #[serde(rename = "project_id")]
         pub project_id: String,
     }
 }
