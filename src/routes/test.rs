@@ -17,7 +17,7 @@ fn ok_response() -> HttpResponse {
 #[post("/{object}")]
 async fn handler(
     object: web::Path<String>,
-    request_body: web::Json<OpenRequest>,
+    request_body: web::Form<OpenRequest>,
 ) -> impl Responder {
     let has_access = can_open_guard(&request_body.into_inner(), &object).await;
 
@@ -44,7 +44,7 @@ mod tests {
         let app = test::init_service(App::new().service(handler)).await;
         let req = test::TestRequest::post()
             .uri("/gate")
-            .set_json(&OpenRequest {
+            .set_form(&OpenRequest {
                 server_id: server_id.to_string(),
                 device_id: device_id.to_string(),
             })

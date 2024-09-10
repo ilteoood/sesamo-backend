@@ -50,7 +50,7 @@ async fn http_post_handler(
 #[post("/{object}")]
 async fn handler(
     object: web::Path<String>,
-    request_body: web::Json<OpenRequest>,
+    request_body: web::Form<OpenRequest>,
 ) -> impl Responder {
     let request_body = request_body.into_inner();
 
@@ -102,7 +102,7 @@ mod tests {
         let app = test::init_service(App::new().service(handler)).await;
         let req = test::TestRequest::post()
             .uri(format!("/{}", object).as_str())
-            .set_json(&OpenRequest {
+            .set_form(&OpenRequest {
                 server_id: server_id.to_string(),
                 device_id: device_id.to_string(),
             })
