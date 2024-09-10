@@ -18,11 +18,10 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-const FIREBASE_CREDENTIALS: &str = "./firebase_reader.json";
-
 const SERVERS_COLLECTION: &str = "servers";
 const CONFIGURATIONS_COLLECTION: &str = "configurations";
 const ALLOWED_DEVICES_COLLECTION: &str = "allowedDevices";
+const GOOGLE_APPLICATION_CREDENTIALS: &str = "GOOGLE_APPLICATION_CREDENTIALS";
 
 pub struct Firestore {
     server_map: Arc<RwLock<HashMap<String, ServerDocument>>>,
@@ -150,13 +149,14 @@ impl Firestore {
     }
 
     fn configure_credentials() {
-        if Path::new(FIREBASE_CREDENTIALS).exists() {
-            set_var("GOOGLE_APPLICATION_CREDENTIALS", FIREBASE_CREDENTIALS)
+        let firebase_credentials = "./firebase_reader.json";
+        if Path::new(firebase_credentials).exists() {
+            set_var("GOOGLE_APPLICATION_CREDENTIALS", firebase_credentials)
         }
     }
 
     fn read_service_account() -> Result<FirestoreServiceAccount, Box<dyn Error>> {
-        let file = File::open(FIREBASE_CREDENTIALS)?;
+        let file = File::open(env::var(GOOGLE_APPLICATION_CREDENTIALS)?)?;
         let reader = BufReader::new(file);
 
         Ok(serde_json::from_reader(reader).unwrap())
