@@ -23,15 +23,21 @@ pub async fn can_open_guard(
 ) -> Result<(), MessageResponse> {
     let firebase_db = get_firestore_instance().await;
 
-    if !firebase_db.server_exists(&request.server_id) {
+    if !firebase_db.server_exists(&request.server_id).await {
         return Err(INVALID_SERVER.clone());
     }
 
-    if !firebase_db.check_configuration(&request.server_id, object.as_str()) {
+    if !firebase_db
+        .check_configuration(&request.server_id, object.as_str())
+        .await
+    {
         return Err(INVALID_ACTION.clone());
     }
 
-    if !firebase_db.has_device_access(request.server_id.as_str(), request.device_id.as_str()) {
+    if !firebase_db
+        .has_device_access(request.server_id.as_str(), request.device_id.as_str())
+        .await
+    {
         return Err(UNAUTHORIZED_DEVICE.clone());
     }
 

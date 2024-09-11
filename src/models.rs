@@ -14,8 +14,6 @@ pub struct OpenRequest {
 }
 
 pub mod firebase {
-    use std::collections::HashMap;
-
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Clone)]
@@ -31,9 +29,10 @@ pub mod firebase {
         pub list: Vec<String>,
     }
 
-    pub struct ServerDocumentConfiguration {
-        pub allowed_devices: ServerAllowedDevices,
-        pub objects: HashMap<String, ObjectConfiguration>,
+    impl ServerAllowedDevices {
+        pub fn default() -> Self {
+            Self { list: vec![] }
+        }
     }
 
     #[derive(Serialize, Deserialize)]
@@ -46,13 +45,13 @@ pub mod firebase {
 
     #[derive(Serialize, Deserialize, Clone, Copy)]
     pub enum ServerDocumentType {
+        #[serde(rename = "httpPost")]
         HttpPost,
     }
 
+    #[derive(Deserialize, Serialize)]
     pub struct ServerDocument {
-        pub id: String,
         pub r#type: ServerDocumentType,
-        pub configurations: ServerDocumentConfiguration,
     }
 
     #[derive(Deserialize, Serialize)]

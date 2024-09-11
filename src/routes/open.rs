@@ -62,10 +62,11 @@ async fn handler(
 
     let firebase_instance = get_firestore_instance().await;
     let firebase_server_type = firebase_instance.get_server_type(&request_body.server_id);
-    let object_configuration =
-        firebase_instance.get_object_configuration(&request_body.server_id, &object);
+    let object_configuration = firebase_instance
+        .get_object_configuration(&request_body.server_id, &object)
+        .await;
 
-    let handler_result = match firebase_server_type {
+    let handler_result = match firebase_server_type.await {
         models::firebase::ServerDocumentType::HttpPost => http_post_handler(object_configuration),
     };
 

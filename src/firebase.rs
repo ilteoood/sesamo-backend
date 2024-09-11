@@ -1,20 +1,19 @@
 use crate::models::firebase::{
     FirestoreServiceAccount, ObjectConfiguration, ServerAllowedDevices, ServerDocument,
-    ServerDocumentBase, ServerDocumentConfiguration, ServerDocumentType,
+    ServerDocumentType,
 };
 use firestore::{
-    FirestoreDb, FirestoreDbOptions, FirestoreListenEvent, FirestoreListenerTarget,
-    FirestoreTempFilesListenStateStorage, FIREBASE_DEFAULT_DATABASE_ID,
+    errors::FirestoreError, FirestoreCache, FirestoreCacheCollectionConfiguration,
+    FirestoreCacheCollectionLoadMode, FirestoreCacheConfiguration, FirestoreDb, FirestoreDbOptions,
+    FirestoreListenerTarget, FirestoreMemListenStateStorage, FirestoreMemoryCacheBackend,
+    FirestoreTempFilesListenStateStorage, ParentPathBuilder, FIREBASE_DEFAULT_DATABASE_ID,
 };
-use futures::{future, StreamExt};
 use std::{
-    collections::HashMap,
     env::{self, set_var},
     error::Error,
     fs::File,
     io::BufReader,
     path::Path,
-    sync::{Arc, RwLock},
 };
 use tokio::sync::OnceCell;
 
@@ -25,7 +24,8 @@ const GOOGLE_APPLICATION_CREDENTIALS: &str = "GOOGLE_APPLICATION_CREDENTIALS";
 const PROJECT_ID: &str = "GOOGLE_CLOUD_PROJECT";
 
 pub struct Firestore {
-    server_map: Arc<RwLock<HashMap<String, ServerDocument>>>,
+    firestore_db: FirestoreDb,
+    cache: FirestoreCache<FirestoreMemoryCacheBackend, FirestoreMemListenStateStorage>,
 }
 
 const TARGET_SERVERS: FirestoreListenerTarget = FirestoreListenerTarget::new(94_u32);
@@ -47,8 +47,6 @@ impl Firestore {
 
         let firestore_db = FirestoreDb::with_options(firestore_options).await?;
 
-        let server_map = Self::build_server_map(&firestore_db).await?;
-
         let mut listener = firestore_db
             .create_listener(FirestoreTempFilesListenStateStorage::new())
             .await?;
@@ -60,89 +58,113 @@ impl Firestore {
             .listen()
             .add_target(TARGET_SERVERS, &mut listener)?;
 
-        let server_map_lock = Arc::new(RwLock::new(server_map));
-        let server_map_clone = Arc::clone(&server_map_lock.clone());
+        let mut cache = FirestoreCache::new(
+            SERVERS_COLLECTION.into(),
+            &firestore_db,
+            FirestoreMemoryCacheBackend::new(
+                FirestoreCacheConfiguration::new().add_collection_config(
+                    &firestore_db,
+                    FirestoreCacheCollectionConfiguration::new(
+                        SERVERS_COLLECTION,
+                        FirestoreListenerTarget::new(1000),
+                        FirestoreCacheCollectionLoadMode::PreloadNone,
+                    ),
+                ),
+            )?,
+            FirestoreMemListenStateStorage::new(),
+        )
+        .await?;
 
-        listener
-            .start(move |event| {
-                let value = firestore_db.clone();
-                let server_map_lock = Arc::clone(&server_map_lock.clone());
-
-                async move {
-                    match event {
-                        FirestoreListenEvent::DocumentChange(ref doc_change) => {
-                            if let Some(doc) = &doc_change.document {
-                                let doc: ServerDocumentBase =
-                                    FirestoreDb::deserialize_doc_to::<ServerDocumentBase>(doc)
-                                        .expect("Deserialized object");
-                                let doc_enriched = Self::enrich_document(&value, doc).await;
-
-                                let mut server_map =
-                                    server_map_lock.write().expect("Poisoned lock");
-                                server_map.insert(doc_enriched.id.clone(), doc_enriched);
-                            }
-                        }
-                        _ => {
-                            println!("Received a listen response event to handle: {event:?}");
-                        }
-                    }
-                    Ok(())
-                }
-            })
-            .await?;
+        cache.load().await?;
 
         Ok(Self {
-            server_map: server_map_clone,
+            firestore_db,
+            cache,
         })
     }
 
-    pub fn server_exists(&self, server_id: &str) -> bool {
-        self.server_map.read().unwrap().contains_key(server_id)
+    async fn read_server(&self, server_id: &str) -> Result<Option<ServerDocument>, FirestoreError> {
+        self.firestore_db
+            .read_through_cache(&self.cache)
+            .fluent()
+            .select()
+            .by_id_in(SERVERS_COLLECTION)
+            .obj()
+            .one(server_id)
+            .await
     }
 
-    pub fn get_server_type(&self, server_id: &str) -> ServerDocumentType {
-        self.server_map
-            .read()
-            .unwrap()
-            .get(server_id)
-            .map(|s| s.r#type)
+    pub async fn server_exists(&self, server_id: &str) -> bool {
+        let server = self.read_server(server_id).await;
+
+        server.is_ok() && server.unwrap().is_some()
+    }
+
+    pub async fn get_server_type(&self, server_id: &str) -> ServerDocumentType {
+        let server = self.read_server(server_id).await.unwrap().unwrap();
+
+        server.r#type
+    }
+
+    fn parent_path_builder(&self, server_id: &str) -> ParentPathBuilder {
+        self.firestore_db
+            .parent_path(SERVERS_COLLECTION, server_id)
             .unwrap()
     }
 
-    pub fn check_configuration(&self, server_id: &str, object: &str) -> bool {
-        self.server_map
-            .read()
-            .unwrap()
-            .get(server_id)
-            .unwrap()
-            .configurations
-            .objects
-            .contains_key(object)
+    async fn retrieve_configurations(
+        &self,
+        server_id: &str,
+        object: &str,
+    ) -> Result<Option<ObjectConfiguration>, FirestoreError> {
+        let parent_path = self.parent_path_builder(server_id);
+
+        self.firestore_db
+            .read_through_cache(&self.cache)
+            .fluent()
+            .select()
+            .by_id_in(CONFIGURATIONS_COLLECTION)
+            .parent(parent_path)
+            .obj()
+            .one(object)
+            .await
     }
 
-    pub fn get_object_configuration(&self, server_id: &str, object: &str) -> ObjectConfiguration {
-        self.server_map
-            .read()
-            .unwrap()
-            .get(server_id)
-            .unwrap()
-            .configurations
-            .objects
-            .get(object)
-            .unwrap()
-            .clone()
+    pub async fn check_configuration(&self, server_id: &str, object: &str) -> bool {
+        let configuration = self.retrieve_configurations(server_id, object).await;
+
+        configuration.is_ok() && configuration.unwrap().is_some()
     }
 
-    pub fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
-        self.server_map
-            .read()
-            .unwrap()
-            .get(server_id)
-            .unwrap()
-            .configurations
-            .allowed_devices
-            .list
-            .contains(&String::from(device_id))
+    pub async fn get_object_configuration(
+        &self,
+        server_id: &str,
+        object: &str,
+    ) -> ObjectConfiguration {
+        let configuration = self.retrieve_configurations(server_id, object).await;
+
+        configuration.unwrap().unwrap()
+    }
+
+    pub async fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
+        let parent_path = self.parent_path_builder(server_id);
+
+        let query_result: Result<Option<ServerAllowedDevices>, FirestoreError> = self
+            .firestore_db
+            .read_through_cache(&self.cache)
+            .fluent()
+            .select()
+            .by_id_in(CONFIGURATIONS_COLLECTION)
+            .parent(parent_path)
+            .obj()
+            .one(ALLOWED_DEVICES_COLLECTION)
+            .await;
+
+        let allowed_devices: ServerAllowedDevices = query_result
+            .unwrap_or(Some(ServerAllowedDevices::default()))
+            .unwrap_or(ServerAllowedDevices::default());
+
+        allowed_devices.list.contains(&String::from(device_id))
     }
 
     fn configure_credentials() {
@@ -160,83 +182,6 @@ impl Firestore {
         let reader = BufReader::new(file);
 
         Ok(serde_json::from_reader(reader).unwrap())
-    }
-
-    async fn build_server_map(
-        firestore_db: &FirestoreDb,
-    ) -> Result<HashMap<String, ServerDocument>, Box<dyn Error>> {
-        let server_documents: Vec<ServerDocumentBase> = firestore_db
-            .fluent()
-            .list()
-            .from(SERVERS_COLLECTION)
-            .obj()
-            .stream_all()
-            .await?
-            .collect()
-            .await;
-
-        let servers: Vec<ServerDocument> = future::join_all(
-            server_documents
-                .into_iter()
-                .map(|doc| Self::enrich_document(firestore_db, doc)),
-        )
-        .await;
-
-        let server_map = servers
-            .into_iter()
-            .map(|doc| (doc.id.clone(), doc))
-            .collect();
-
-        Ok(server_map)
-    }
-
-    async fn enrich_document(
-        firestore_db: &FirestoreDb,
-        doc: ServerDocumentBase,
-    ) -> ServerDocument {
-        let parent_path = firestore_db
-            .parent_path(SERVERS_COLLECTION, doc.id.clone())
-            .unwrap();
-
-        let allowed_devices: ServerAllowedDevices = firestore_db
-            .fluent()
-            .select()
-            .by_id_in(CONFIGURATIONS_COLLECTION)
-            .parent(&parent_path)
-            .obj()
-            .one(ALLOWED_DEVICES_COLLECTION)
-            .await
-            .unwrap()
-            .unwrap();
-
-        let objects = firestore_db
-            .fluent()
-            .list()
-            .from(CONFIGURATIONS_COLLECTION)
-            .parent(&parent_path)
-            .obj()
-            .stream_all()
-            .await
-            .unwrap()
-            .collect::<Vec<ObjectConfiguration>>()
-            .await
-            .into_iter()
-            .map(|doc| (doc.id.clone(), doc))
-            .collect();
-
-        let configurations = ServerDocumentConfiguration {
-            allowed_devices,
-            objects,
-        };
-
-        ServerDocument {
-            configurations,
-            id: doc.id,
-            r#type: match doc.r#type.as_str() {
-                "httpPost" => ServerDocumentType::HttpPost,
-                _ => panic!("Unknown server type: {}", doc.r#type),
-            },
-        }
     }
 }
 
