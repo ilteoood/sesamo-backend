@@ -5,8 +5,8 @@ meta {
 }
 
 post {
-  url: {{HOST}}/open/gate
-  body: json
+  url: {{HOST}}/test/gate
+  body: multipartForm
   auth: none
 }
 
@@ -15,4 +15,9 @@ body:json {
     "serverId": "foo",
     "deviceId": "faa"
   }
+}
+
+body:multipart-form {
+  serverId: serverId
+  deviceId: deviceId
 }
