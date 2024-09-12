@@ -160,8 +160,6 @@ impl Firestore {
             .one(ALLOWED_DEVICES_COLLECTION)
             .await;
 
-        println!("{:?}", query_result);
-
         let allowed_devices: ServerAllowedDevices = query_result
             .unwrap_or(Some(ServerAllowedDevices::default()))
             .unwrap_or(ServerAllowedDevices::default());
@@ -196,7 +194,6 @@ mod tests {
     async fn test_configure_credentials() {
         let result = Firestore::new().await;
 
-        //assert!(result.is_ok());
-        println!("{:?}", result.err());
+        assert!(result.is_ok());
     }
 }
