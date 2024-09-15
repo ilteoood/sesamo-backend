@@ -1,8 +1,6 @@
 name: Deploy to Google App Engine
 on:
   push:
-    branches:
-      - master
 
 jobs:
   build:
@@ -16,10 +14,6 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y musl-tools openssl libssl-dev pkg-config libudev-dev
-      - name: Install MUSL target
-        run: rustup target add x86_64-unknown-linux-musl
       - name: Test
         run: cargo test
         env:
@@ -34,6 +28,7 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           credentials_json: ${{ secrets.GCP_SA_KEY }}
       - uses: 'google-github-actions/deploy-appengine@v2'
+        if: github.ref == 'refs/heads/master'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
           flags: --no-cache
