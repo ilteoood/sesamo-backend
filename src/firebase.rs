@@ -161,10 +161,10 @@ impl Firestore {
             .await;
 
         let allowed_devices: ServerAllowedDevices = query_result
-            .unwrap_or(Some(ServerAllowedDevices::default()))
-            .unwrap_or(ServerAllowedDevices::default());
+            .unwrap_or_else(|_| Some(ServerAllowedDevices::default()))
+            .unwrap_or_else(ServerAllowedDevices::default);
 
-        allowed_devices.list.contains(&String::from(device_id))
+        allowed_devices.list.contains(&device_id.to_owned())
     }
 
     fn configure_credentials() {
