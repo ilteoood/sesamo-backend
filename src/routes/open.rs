@@ -5,6 +5,7 @@ use actix_web::{
     web::{self},
     HttpResponse, Responder,
 };
+use futures::try_join;
 use itertools::Itertools;
 
 use crate::{
@@ -61,12 +62,14 @@ async fn handler(
     }
 
     let firebase_instance = get_firestore_instance().await;
-    let firebase_server_type = firebase_instance.get_server_type(&request_body.server_id);
-    let object_configuration = firebase_instance
-        .get_object_configuration(&request_body.server_id, &object)
-        .await;
 
-    let handler_result = match firebase_server_type.await {
+    let (firebase_server_type, object_configuration) = try_join!(
+        firebase_instance.get_server_type(&request_body.server_id),
+        firebase_instance.get_object_configuration(&request_body.server_id, &object)
+    )
+    .unwrap();
+
+    let handler_result = match firebase_server_type {
         models::firebase::ServerDocumentType::HttpPost => http_post_handler(object_configuration),
     };
 

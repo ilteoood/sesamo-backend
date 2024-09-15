@@ -100,10 +100,13 @@ impl Firestore {
         server.is_ok() && server.unwrap().is_some()
     }
 
-    pub async fn get_server_type(&self, server_id: &str) -> ServerDocumentType {
-        let server = self.read_server(server_id).await.unwrap().unwrap();
+    pub async fn get_server_type(
+        &self,
+        server_id: &str,
+    ) -> Result<ServerDocumentType, FirestoreError> {
+        let server = self.read_server(server_id).await?.unwrap();
 
-        server.r#type
+        Ok(server.r#type)
     }
 
     fn parent_path_builder(&self, server_id: &str) -> ParentPathBuilder {
@@ -140,10 +143,10 @@ impl Firestore {
         &self,
         server_id: &str,
         object: &str,
-    ) -> ObjectConfiguration {
-        let configuration = self.retrieve_configurations(server_id, object).await;
+    ) -> Result<ObjectConfiguration, FirestoreError> {
+        let configuration = self.retrieve_configurations(server_id, object).await?;
 
-        configuration.unwrap().unwrap()
+        Ok(configuration.unwrap())
     }
 
     pub async fn has_device_access(&self, server_id: &str, device_id: &str) -> bool {
