@@ -1,8 +1,6 @@
 name: Deploy to Google App Engine
 on:
   push:
-    branches:
-      - master
 
 jobs:
   build:
@@ -34,6 +32,7 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           credentials_json: ${{ secrets.GCP_SA_KEY }}
       - uses: 'google-github-actions/deploy-appengine@v2'
+        if: github.ref == 'refs/heads/master'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
           flags: --no-cache
