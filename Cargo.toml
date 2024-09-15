@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 actix-web = "4.9.0"
 env_logger = "0.11.5"
-firestore = { version = "0.43.0", features = ["caching-persistent"] }
+firestore = { version = "0.43.0", features = ["caching-memory"] }
 futures = "0.3.30"
 itertools = "0.13.0"
 openssl = { version = "0.10.66", features = ["vendored"] }
@@ -16,3 +16,6 @@ reqwest = "0.12.7"
 serde = {version = "1.0.209", features = ["derive"]}
 serde_json = "1.0.127"
 tokio = { version = "1.40.0", features = ["sync"] }
+
+[dev-dependencies]
+tokio-shared-rt = "0.1.0"

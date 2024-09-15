@@ -49,7 +49,6 @@ mod tests {
     use std::env;
 
     use super::*;
-    use actix_web::test;
 
     async fn invoke_guard(
         server_id: &str,
@@ -67,7 +66,7 @@ mod tests {
         .await
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_server_not_exists() {
         let response = invoke_guard("test", "test_device", "gate").await;
 
@@ -75,21 +74,21 @@ mod tests {
         assert_eq!(response.unwrap_err(), *INVALID_SERVER);
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_check_configuration() {
         let response = invoke_guard("test_server", "test_device", "test").await;
         assert!(response.is_err());
         assert_eq!(response.unwrap_err(), *INVALID_ACTION);
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_device_access() {
         let response = invoke_guard("test_server", "test", "gate").await;
         assert!(response.is_err());
         assert_eq!(response.unwrap_err(), *UNAUTHORIZED_DEVICE);
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_ok() {
         let response = invoke_guard("test_server", "test_device", "gate").await;
         assert!(response.is_ok());

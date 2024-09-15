@@ -5,7 +5,7 @@ use crate::models::firebase::{
 use firestore::{
     errors::FirestoreError, FirestoreCache, FirestoreCacheCollectionConfiguration,
     FirestoreCacheCollectionLoadMode, FirestoreCacheConfiguration, FirestoreDb, FirestoreDbOptions,
-    FirestoreListenerTarget, FirestorePersistentCacheBackend, FirestoreTempFilesListenStateStorage,
+    FirestoreListenerTarget, FirestoreMemListenStateStorage, FirestoreMemoryCacheBackend,
     ParentPathBuilder, FIREBASE_DEFAULT_DATABASE_ID,
 };
 use std::{
@@ -25,7 +25,7 @@ const PROJECT_ID: &str = "GOOGLE_CLOUD_PROJECT";
 
 pub struct Firestore {
     firestore_db: FirestoreDb,
-    cache: FirestoreCache<FirestorePersistentCacheBackend, FirestoreTempFilesListenStateStorage>,
+    cache: FirestoreCache<FirestoreMemoryCacheBackend, FirestoreMemListenStateStorage>,
 }
 
 const TARGET_SERVERS: FirestoreListenerTarget = FirestoreListenerTarget::new(94_u32);
@@ -48,7 +48,7 @@ impl Firestore {
         let firestore_db = FirestoreDb::with_options(firestore_options).await?;
 
         let mut listener = firestore_db
-            .create_listener(FirestoreTempFilesListenStateStorage::new())
+            .create_listener(FirestoreMemListenStateStorage::new())
             .await?;
 
         firestore_db
@@ -61,17 +61,17 @@ impl Firestore {
         let mut cache = FirestoreCache::new(
             SERVERS_COLLECTION.into(),
             &firestore_db,
-            FirestorePersistentCacheBackend::new(
+            FirestoreMemoryCacheBackend::new(
                 FirestoreCacheConfiguration::new().add_collection_config(
                     &firestore_db,
                     FirestoreCacheCollectionConfiguration::new(
                         SERVERS_COLLECTION,
                         FirestoreListenerTarget::new(1000),
-                        FirestoreCacheCollectionLoadMode::PreloadAllIfEmpty,
+                        FirestoreCacheCollectionLoadMode::PreloadAllDocs,
                     ),
                 ),
             )?,
-            FirestoreTempFilesListenStateStorage::new(),
+            FirestoreMemListenStateStorage::new(),
         )
         .await?;
 
@@ -188,9 +188,8 @@ impl Firestore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::test;
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_configure_credentials() {
         let result = Firestore::new().await;
 

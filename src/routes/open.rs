@@ -86,13 +86,13 @@ mod tests {
     use super::*;
     use actix_web::{http::StatusCode, test, App};
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_ok_response() {
         let response = ok_response();
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_ko_response() {
         let response = ko_response();
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
@@ -114,13 +114,13 @@ mod tests {
         test::read_body_json(response).await
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_ok_handler() {
         let response = invoke_handler("test_server", "test_device", "gate").await;
         assert_eq!(response, *OK_MESSAGE);
     }
 
-    #[test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_ko_handler() {
         let response = invoke_handler("test_server", "test_device", "wicket").await;
         assert_eq!(response, *KO_MESSAGE);
