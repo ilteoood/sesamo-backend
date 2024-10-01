@@ -12,7 +12,7 @@ firestore = { version = "0.43.0", features = ["caching-memory"] }
 futures = "0.3.30"
 itertools = "0.13.0"
 openssl = { version = "0.10.66", features = ["vendored"] }
-reqwest = "0.12.7"
+reqwest = "0.12.8"
 serde = {version = "1.0.209", features = ["derive"]}
 serde_json = "1.0.127"
 tokio = { version = "1.40.0", features = ["sync"] }
