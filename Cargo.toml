@@ -9,7 +9,7 @@ edition = "2021"
 actix-web = "4.9.0"
 env_logger = "0.11.5"
 firestore = { version = "0.43.0", features = ["caching-memory"] }
-futures = "0.3.30"
+futures = "0.3.31"
 itertools = "0.13.0"
 openssl = { version = "0.10.66", features = ["vendored"] }
 reqwest = "0.12.7"
