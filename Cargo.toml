@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 actix-web = "4.9.0"
 env_logger = "0.11.5"
-firestore = { version = "0.43.1", features = ["caching-memory"] }
+firestore = { version = "0.44.0", features = ["caching-memory"] }
 futures = "0.3.31"
 itertools = "0.13.0"
 openssl = { version = "0.10.68", features = ["vendored"] }
