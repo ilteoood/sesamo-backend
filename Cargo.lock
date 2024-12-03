@@ -798,9 +798,9 @@ checksum = "486f806e73c5707928240ddc295403b1b93c96a02038563881c4a2fd84b81ac4"
 
 [[package]]
 name = "firestore"
-version = "0.43.1"
+version = "0.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "483bce3ebe3bec625c4a3800a84966e966604e274ea9acbe7e6429477f915445"
+checksum = "bdbba2c9a18b47ce16358ffe33bb442256d0cc9f166883aba856746382a8bd3e"
 dependencies = [
  "async-trait",
  "backoff",
@@ -951,9 +951,9 @@ dependencies = [
 
 [[package]]
 name = "gcloud-sdk"
-version = "0.25.8"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0775bfa745cdf7287ae9765a685a813b91049b6b6d5ca3de20a3d5d16a80d8b2"
+checksum = "1a74ef7c29e682f146bac39c68921e2516e1f99f90742c8de56cb073990ef19f"
 dependencies = [
  "async-trait",
  "bytes",
