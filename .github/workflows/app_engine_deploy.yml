@@ -24,7 +24,7 @@ jobs:
         env:
           CROSS_CONTAINER_OPTS: "-v /var/run/docker.sock:/var/run/docker.sock"
       - name: Move binary
-        run: mv ./target/release/sesamo-backend ./sesamo-backend
+        run: mv ./target/x86_64-unknown-linux-musl/release/sesamo-backend ./sesamo-backend
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ secrets.PROJECT_ID }}
