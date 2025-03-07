@@ -14,12 +14,15 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Test
-        run: cargo test
+      - name: Build and test binary
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: both
+          target: x86_64-unknown-linux-musl
+          args: "--locked --release"
+          strip: true
         env:
-          FIRESTORE_DATABASE: test
-      - name: Build
-        run: cargo build --release
+          CROSS_CONTAINER_OPTS: "-v /var/run/docker.sock:/var/run/docker.sock"
       - name: Move binary
         run: mv ./target/release/sesamo-backend ./sesamo-backend
       - uses: 'google-github-actions/auth@v2'
