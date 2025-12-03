@@ -4,7 +4,7 @@ use crate::{
     guards::can_open_guard,
     models::{MessageResponse, OpenRequest},
 };
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, post, web};
 
 static OK_MESSAGE: LazyLock<MessageResponse> = LazyLock::new(|| MessageResponse {
     message_id: String::from("test_ok"),
@@ -31,7 +31,7 @@ mod tests {
     use std::env;
 
     use super::*;
-    use actix_web::{http::StatusCode, test, App};
+    use actix_web::{App, http::StatusCode, test};
 
     #[tokio_shared_rt::test(shared)]
     async fn test_ok_response() {
@@ -40,7 +40,9 @@ mod tests {
     }
 
     async fn invoke_handler(server_id: &str, device_id: &str) -> MessageResponse {
-        env::set_var("FIRESTORE_DATABASE", "test");
+        unsafe {
+            env::set_var("FIRESTORE_DATABASE", "test");
+        }
         let app = test::init_service(App::new().service(handler)).await;
         let req = test::TestRequest::post()
             .uri("/gate")

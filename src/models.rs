@@ -35,14 +35,6 @@ pub mod firebase {
         }
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct ServerDocumentBase {
-        #[serde(alias = "_firestore_id")]
-        pub id: String,
-        pub name: String,
-        pub r#type: String,
-    }
-
     #[derive(Serialize, Deserialize, Clone, Copy)]
     pub enum ServerDocumentType {
         #[serde(rename = "httpPost")]

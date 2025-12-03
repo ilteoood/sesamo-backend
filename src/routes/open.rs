@@ -1,9 +1,8 @@
 use std::sync::LazyLock;
 
 use actix_web::{
-    post,
+    HttpResponse, Responder, post,
     web::{self},
-    HttpResponse, Responder,
 };
 use futures::try_join;
 use itertools::Itertools;
@@ -11,7 +10,7 @@ use itertools::Itertools;
 use crate::{
     firebase::get_firestore_instance,
     guards::can_open_guard,
-    models::{self, firebase::ObjectConfiguration, MessageResponse, OpenRequest},
+    models::{self, MessageResponse, OpenRequest, firebase::ObjectConfiguration},
 };
 
 static OK_MESSAGE: LazyLock<MessageResponse> = LazyLock::new(|| MessageResponse {
@@ -87,7 +86,7 @@ mod tests {
     use std::env;
 
     use super::*;
-    use actix_web::{http::StatusCode, test, App};
+    use actix_web::{App, http::StatusCode, test};
 
     #[tokio_shared_rt::test(shared)]
     async fn test_ok_response() {
@@ -102,7 +101,9 @@ mod tests {
     }
 
     async fn invoke_handler(server_id: &str, device_id: &str, object: &str) -> MessageResponse {
-        env::set_var("FIRESTORE_DATABASE", "test");
+        unsafe {
+            env::set_var("FIRESTORE_DATABASE", "test");
+        }
         let app = test::init_service(App::new().service(handler)).await;
         let req = test::TestRequest::post()
             .uri(format!("/{}", object).as_str())

@@ -55,7 +55,9 @@ mod tests {
         device_id: &str,
         object: &str,
     ) -> Result<(), MessageResponse> {
-        env::set_var("FIRESTORE_DATABASE", "test");
+        unsafe {
+            env::set_var("FIRESTORE_DATABASE", "test");
+        }
         can_open_guard(
             &OpenRequest {
                 server_id: server_id.to_string(),

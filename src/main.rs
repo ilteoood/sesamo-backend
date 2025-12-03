@@ -1,4 +1,4 @@
-use actix_web::{middleware::Logger, web, App, HttpResponse, HttpServer};
+use actix_web::{App, HttpResponse, HttpServer, middleware::Logger, web};
 use routes::{open, test};
 use std::env;
 

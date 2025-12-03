@@ -3,10 +3,10 @@ use crate::models::firebase::{
     ServerDocumentType,
 };
 use firestore::{
-    errors::FirestoreError, FirestoreCache, FirestoreCacheCollectionConfiguration,
+    FIREBASE_DEFAULT_DATABASE_ID, FirestoreCache, FirestoreCacheCollectionConfiguration,
     FirestoreCacheCollectionLoadMode, FirestoreCacheConfiguration, FirestoreDb, FirestoreDbOptions,
     FirestoreListenerTarget, FirestoreMemListenStateStorage, FirestoreMemoryCacheBackend,
-    ParentPathBuilder, FIREBASE_DEFAULT_DATABASE_ID,
+    ParentPathBuilder, errors::FirestoreError,
 };
 use std::{
     env::{self, set_var},
@@ -173,10 +173,14 @@ impl Firestore {
     fn configure_credentials() {
         let firebase_credentials = "./firebase_reader.json";
         if Path::new(firebase_credentials).exists() {
-            set_var(GOOGLE_APPLICATION_CREDENTIALS, firebase_credentials);
+            unsafe {
+                set_var(GOOGLE_APPLICATION_CREDENTIALS, firebase_credentials);
+            }
 
             let service_account = Self::read_service_account().unwrap();
-            set_var(PROJECT_ID, service_account.project_id);
+            unsafe {
+                set_var(PROJECT_ID, service_account.project_id);
+            }
         }
     }
 
