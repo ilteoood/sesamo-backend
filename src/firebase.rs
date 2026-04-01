@@ -39,10 +39,6 @@ pub async fn get_firestore_instance() -> &'static Firestore {
 
 impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {
-        // Install the default CryptoProvider so that jsonwebtoken (used by gcloud-sdk)
-        // can resolve the TLS backend. Both `ring` and `aws-lc-rs` may be present in the
-        // dependency tree; the error returned when a provider is already installed is safe
-        // to ignore.
         let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
         Self::configure_credentials();
 
