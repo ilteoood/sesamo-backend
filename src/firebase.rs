@@ -39,6 +39,7 @@ pub async fn get_firestore_instance() -> &'static Firestore {
 
 impl Firestore {
     pub async fn new() -> Result<Firestore, Box<dyn Error>> {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
         Self::configure_credentials();
 
         let firestore_options = FirestoreDbOptions::new(env::var(PROJECT_ID)?).with_database_id(
