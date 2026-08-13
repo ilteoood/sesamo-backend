@@ -12,6 +12,7 @@ firestore = { version = "0.50.0", features = ["caching-memory"] }
 futures = "0.3.33"
 itertools = "0.15.0"
 jsonwebtoken = { version = "11.0.0", features = ["aws_lc_rs"] }
+jwt_transitive_crypto_provider = { package = "jsonwebtoken", version = "=10.4.0", features = ["rust_crypto"] }
 openssl = { version = "0.10.81", features = ["vendored"] }
 reqwest = { version = "0.13.4", features = ["form"] }
 rustls = { version = "0.23.43", features = ["aws-lc-rs"] }

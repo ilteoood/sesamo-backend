@@ -72,10 +72,10 @@ async fn handler(
         models::firebase::ServerDocumentType::HttpPost => http_post_handler(object_configuration),
     };
 
-    if let Ok(result) = handler_result.await {
-        if result.status().is_success() {
-            return ok_response();
-        }
+    if let Ok(result) = handler_result.await
+        && result.status().is_success()
+    {
+        return ok_response();
     }
 
     ko_response()
