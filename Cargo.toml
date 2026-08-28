@@ -8,7 +8,7 @@ edition = "2024"
 [dependencies]
 actix-web = "4.14.0"
 env_logger = "0.11.11"
-firestore = { version = "0.52.0", features = ["caching-memory"] }
+firestore = { version = "0.53.0", features = ["caching-memory"] }
 futures = "0.3.33"
 itertools = "0.15.0"
 jsonwebtoken = { version = "11.0.0", features = ["aws_lc_rs"] }
